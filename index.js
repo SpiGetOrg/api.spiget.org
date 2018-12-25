@@ -46,6 +46,8 @@ morgan.token('remote-addr', function (req) {
     return req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 });
 
+// Pretty-Print JSON
+app.set('json spaces', 2);
 
 // mongoose.plugin(util.idPlugin);
 mongoose.plugin(util.paginatePlugin);
