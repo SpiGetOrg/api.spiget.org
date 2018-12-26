@@ -77,7 +77,7 @@ app.use(function (err, req, res, next) {
     console.error(err);
     res.status(500).json({
         error: "Unexpected Exception",
-        msg: "Unexpected Exception. Please report this to https://github.com/SpiGetOrg/RestAPI/issues"
+        msg: "Unexpected Exception. Please report this to https://github.com/SpiGetOrg/api.spiget.org/issues"
     })
 })
 
