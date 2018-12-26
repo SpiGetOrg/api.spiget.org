@@ -154,7 +154,6 @@ module.exports.paginateReq = function (req, defaultFields, other) {
         if (sort === "id") sort = "_id";
         sortObj[sort] = sortMode;
     }
-    console.log(sortObj)
 
     return Object.assign({}, {
         page: req.query.page || 1,
