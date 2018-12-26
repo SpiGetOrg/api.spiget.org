@@ -36,7 +36,7 @@ module.exports = function (express, config) {
     // Individual Authors
 
 
-    router.get("/:author", function (req, res) {
+    router.get("/:author(\\d+)", function (req, res) {
         Author.findOne({_id: req.params.author}).select(util.selectFields(req,util.authorAllFields)).lean().exec(function (err, author) {
             if (err) {
                 return console.error(err);
@@ -49,7 +49,7 @@ module.exports = function (express, config) {
         })
     });
 
-    router.get("/:author/go", function (req, res) {
+    router.get("/:author(\\d+)/go", function (req, res) {
         Author.findOne({_id: req.params.author}).select("_id").lean().exec(function (err, author) {
             if (err) {
                 return console.error(err);
@@ -65,7 +65,7 @@ module.exports = function (express, config) {
 
     // Avatar
 
-    router.get("/:author/avatar/:type?", function (req, res) {
+    router.get("/:author(\\d+)/avatar/:type?", function (req, res) {
         Author.findOne({_id: req.params.author}, "_id icon").lean().exec(function (err, author) {
             if (err) {
                 return console.error(err);
@@ -82,7 +82,7 @@ module.exports = function (express, config) {
 
     // Reviews
 
-    router.get("/:author/reviews", function (req, res) {
+    router.get("/:author(\\d+)/reviews", function (req, res) {
         ResourceReview.paginate({"author.id": req.params.author}, util.paginateReq(req, util.reviewAllFields), function (err, reviews) {
             if (err) {
                 return console.error(err);
@@ -93,7 +93,7 @@ module.exports = function (express, config) {
     });
 
 
-    router.get("/:author/resources", function (req, res) {
+    router.get("/:author(\\d+)/resources", function (req, res) {
         Resource.paginate({"author.id": req.params.author}, util.paginateReq(req, util.resourceListFields), function (err, resources) {
             if (err) {
                 return console.error(err);

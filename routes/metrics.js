@@ -3,7 +3,7 @@ const request = require("request");
 module.exports = function (express, config) {
     let router = express.Router();
 
-    router.get("/requests/:days?", function (req, res) {
+    router.get("/requests/:days(\\d+)?", function (req, res) {
         let days = parseInt(req.params.days || "7");
         let minutes = days * 1440;
 

@@ -90,7 +90,7 @@ module.exports = function (express, config) {
     // Individual Resource Routes
 
 
-    router.get("/:resource", function (req, res) {
+    router.get("/:resource(\\d+)", function (req, res) {
         Resource.findOne({_id: req.params.resource}).select(util.selectFields(req,util.resourceAllFields)).lean().exec(function (err, resource) {
             if (err) {
                 return console.error(err);
@@ -103,7 +103,7 @@ module.exports = function (express, config) {
         })
     });
 
-    router.get("/:resource/go", function (req, res) {
+    router.get("/:resource(\\d+)/go", function (req, res) {
         Resource.findOne({_id: req.params.resource}).select("_id").lean().exec(function (err, resource) {
             if (err) {
                 return console.error(err);
@@ -119,7 +119,7 @@ module.exports = function (express, config) {
 
     // Author
 
-    router.get("/:resource/author", function (req, res) {
+    router.get("/:resource(\\d+)/author", function (req, res) {
         Resource.findOne({_id: req.params.resource}, "_id author").lean().exec(function (err, resource) {
             if (err) {
                 return console.error(err);
@@ -144,7 +144,7 @@ module.exports = function (express, config) {
 
     // Icon
 
-    router.get("/:resource/icon/:type?", function (req, res) {
+    router.get("/:resource(\\d+)/icon/:type?", function (req, res) {
         Resource.findOne({_id: req.params.resource}, "_id icon").lean().exec(function (err, resource) {
             if (err) {
                 return console.error(err);
@@ -159,7 +159,7 @@ module.exports = function (express, config) {
 
     // Download
 
-    router.get("/:resource/download", function (req, res) {
+    router.get("/:resource(\\d+)/download", function (req, res) {
         Resource.findOne({_id: req.params.resource}, "_id file").lean().exec(function (err, resource) {
             if (err) {
                 return console.error(err);
@@ -182,7 +182,7 @@ module.exports = function (express, config) {
 
     // Reviews
 
-    router.get("/:resource/reviews", function (req, res) {
+    router.get("/:resource(\\d+)/reviews", function (req, res) {
         ResourceReview.paginate({"resource": req.params.resource}, util.paginateReq(req, util.reviewAllFields), function (err, reviews) {
             if (err) {
                 return console.error(err);
@@ -204,7 +204,7 @@ module.exports = function (express, config) {
         });
     });
 
-    router.get("/:resource/updates/:update", function (req, res) {
+    router.get("/:resource(\\d+)/updates/:update(\\d+|latest)", function (req, res) {
         if ("latest" === req.params.update) {
             ResourceUpdate.findOne({"resource": req.params.resource}).sort({"date": 1}).lean().exec(function (err, update) {
                 if (err) {
@@ -228,7 +228,7 @@ module.exports = function (express, config) {
 
     // Versions
 
-    router.get("/:resource/versions", function (req, res) {
+    router.get("/:resource(\\d+)/versions", function (req, res) {
         ResourceVersion.paginate({"resource": req.params.resource}, util.paginateReq(req, util.versionAllFields), function (err, versions) {
             if (err) {
                 return console.error(err);
@@ -238,7 +238,7 @@ module.exports = function (express, config) {
         });
     });
 
-    router.get("/:resource/versions/:version", function (req, res) {
+    router.get("/:resource(\\d+)/versions/:version(\\d+|latest)", function (req, res) {
         if ("latest" === req.params.version) {
             ResourceVersion.findOne({"resource": req.params.resource}).sort({"releaseDate": -1}).lean().exec(function (err, version) {
                 if (err) {
@@ -260,7 +260,7 @@ module.exports = function (express, config) {
         }
     });
 
-    router.get("/:resource/versions/:version/download", function (req, res) {
+    router.get("/:resource(\\d+)/versions/:version(\\d+|latest)/download", function (req, res) {
         if ("latest" === req.params.version) {
             ResourceVersion.findOne({"resource": req.params.resource}, "_id resource").sort({"releaseDate": -1}).lean().exec(function (err, version) {
                 if (err) {

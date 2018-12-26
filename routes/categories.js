@@ -18,7 +18,7 @@ module.exports = function (express, config) {
         });
     });
 
-    router.get("/:category", function (req, res) {
+    router.get("/:category(\\d+)", function (req, res) {
         Category.findOne({_id: req.params.category}).select(util.categoryAllFields).lean().exec(function (err, category) {
             if (err) {
                 return console.error(err);
@@ -31,7 +31,7 @@ module.exports = function (express, config) {
         })
     });
 
-    router.get("/:category/go", function (req, res) {
+    router.get("/:category(\\d+)/go", function (req, res) {
         Category.findOne({_id: req.params.category}).lean().exec(function (err, category) {
             if (err) {
                 return console.error(err);
@@ -45,7 +45,7 @@ module.exports = function (express, config) {
         })
     });
 
-    router.get("/:category/resources", function (req, res) {
+    router.get("/:category(\\d+)/resources", function (req, res) {
         Resource.paginate({"category.id": req.params.category}, util.paginateReq(req, util.resourceListFields), function (err, resources) {
             if (err) {
                 return console.error(err);

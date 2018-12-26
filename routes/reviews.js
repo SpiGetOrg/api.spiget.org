@@ -38,7 +38,7 @@ module.exports = function (express, config) {
         });
     });
 
-    router.get("/:review", function (req, res) {
+    router.get("/:review(\\d+)", function (req, res) {
         Review.findOne({_id: req.params.review}).select(util.selectFields(req, util.reviewAllFields)).lean().exec(function (err, review) {
             if (err) {
                 return console.error(err);
