@@ -72,6 +72,7 @@ app.use("/v2/authors", require("./routes/authors")(express, config));
 app.use("/v2/categories", require("./routes/categories")(express, config));
 app.use("/v2/reviews", require("./routes/reviews")(express, config));
 app.use("/v2/search", require("./routes/search")(express, config));
+app.use("/v2/metrics", require("./routes/metrics")(express, config));
 
 app.use(function (err, req, res, next) {
     console.error(err);

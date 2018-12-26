@@ -16,5 +16,10 @@ config.mongo = {
     database: "spiget"
 };
 
+config.cloudflare = {
+    zone: "",
+    key: "",
+    email: ""
+};
 
 module.exports = config;
