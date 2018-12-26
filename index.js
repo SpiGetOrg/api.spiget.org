@@ -17,8 +17,9 @@ app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');
     if (req.method === 'OPTIONS') {
         res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PUT");
-        res.header("Access-Control-Allow-Headers", "X-Requested-With, Accept, Content-Type, Origin");
+        res.header("Access-Control-Allow-Headers", "X-Requested-With, Accept, Content-Type, Origin, Spiget-User-Agent");
         res.header("Access-Control-Request-Headers", "X-Requested-With, Accept, Content-Type, Origin");
+        res.header("Access-Control-Expose-Headers", "Content-Type, Content-Length, Location, X-Api-Time, X-Api-Server, X-Page-Sort, X-Page-Order, X-Page-Size, X-Max-Page-Size, X-Page-Index, X-Page-Count");
         return res.sendStatus(200);
     } else {
         return next();
