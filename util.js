@@ -238,7 +238,8 @@ module.exports.forceObject = function (arr) {
 module.exports.makeDownloadFile = function (config, resource, type = ".jar") {
     let root = config.resourceFileRoot;
     let split = resource.split("");
+    split.pop();
 
-    //// <root>/1/2/3/4/1234.jar
+    //// <root>/1/2/3/1234.jar
     return path.join(root, split.join("/"), resource + type);
 };
