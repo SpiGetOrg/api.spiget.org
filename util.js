@@ -156,8 +156,8 @@ module.exports.paginateReq = function (req, defaultFields, other) {
     }
 
     return Object.assign({}, {
-        page: req.query.page || 1,
-        limit: req.query.size || 10,
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.size) || 10,
         sort: sortObj,
         select: fieldStr
     }, other);
