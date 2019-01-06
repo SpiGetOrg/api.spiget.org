@@ -2,6 +2,7 @@ let express = require('express');
 let app = express();
 let http = require('http');
 let server = http.Server(app);
+let bodyParser = require("body-parser");
 let morgan = require('morgan');
 let mongoose = require("mongoose");
 let Schema = mongoose.Schema;
@@ -25,6 +26,9 @@ app.use(function (req, res, next) {
         return next();
     }
 });
+
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json({extended: true}));
 
 app.use(function (req, res, next) {
     req.realAddress = req.header("x-real-ip") || req.realAddress;
