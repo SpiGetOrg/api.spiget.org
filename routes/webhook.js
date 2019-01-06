@@ -29,6 +29,13 @@ module.exports = function (express, config) {
             res.status(400).json({error: "Missing events"});
             return;
         }
+        if (typeof events === "string") {
+            events = JSON.parse(events);
+        }
+        if(events.length === 0) {
+            res.status(400).json({error: "Missing events"});
+            return;
+        }
         for (let i = 0; i < events.length; i++) {
             if (VALID_EVENTS.indexOf(events[i]) < 0) {
                 res.status(400).json({error: "Unknown event: " + events[i]});

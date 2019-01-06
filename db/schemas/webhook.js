@@ -8,7 +8,7 @@ let webhookSchema = new Schema({
     failedConnections: Number,
     failStatus: Number,
     events: {
-        type: String,
+        type: [String],
         enum: ["new-resource", "resource-update", "new-author"]
     }
 }, {collection: "webhooks"});
