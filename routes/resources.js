@@ -194,7 +194,7 @@ module.exports = function (express, config) {
 
     // Updates
 
-    router.get("/:resource/updates", function (req, res) {
+    router.get("/:resource(\\d+)/updates", function (req, res) {
         ResourceUpdate.paginate({"resource": req.params.resource}, util.paginateReq(req, util.updateAllFields), function (err, updates) {
             if (err) {
                 return console.error(err);
