@@ -160,7 +160,7 @@ module.exports = function (express, config) {
     // Download
 
     router.get("/:resource(\\d+)/download", function (req, res) {
-        Resource.findOne({_id: req.params.resource}, "_id file").lean().exec(function (err, resource) {
+        Resource.findOne({_id: req.params.resource}, "_id name file").lean().exec(function (err, resource) {
             if (err) {
                 return console.error(err);
             }
