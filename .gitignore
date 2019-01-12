@@ -1,0 +1,9 @@
+*.idea/
+*.iws
+*.settings
+*.classpath
+*.project
+*/target
+
+/node_modules/
+config.js
