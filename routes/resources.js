@@ -210,6 +210,10 @@ module.exports = function (express, config) {
                 if (err) {
                     return console.error(err);
                 }
+                if (!update) {
+                    res.status(404).json({error: "update not found"})
+                    return;
+                }
                 res.json(util.fixId(update));
             });
         } else {
@@ -244,6 +248,10 @@ module.exports = function (express, config) {
                 if (err) {
                     return console.error(err);
                 }
+                if (!version) {
+                    res.status(404).json({error: "version not found"})
+                    return;
+                }
                 res.json(util.fixId(version));
             });
         } else {
@@ -265,6 +273,10 @@ module.exports = function (express, config) {
             ResourceVersion.findOne({"resource": req.params.resource}, "_id resource").sort({"releaseDate": -1}).lean().exec(function (err, version) {
                 if (err) {
                     return console.error(err);
+                }
+                if (!version) {
+                    res.status(404).json({error: "version not found"})
+                    return;
                 }
                 res.redirect("https://spigotmc.org/resources/" + version.resource + "/download?version=" + version._id);
             });
