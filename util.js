@@ -185,6 +185,9 @@ module.exports.paginateRes = function (paginated, res) {
         "X-Page-Count": paginated.pages,
         "X-Total": paginated.total
     });
+    if (paginated.total <= 0) {
+        res.status(404);
+    }
 
     return paginated.docs;
 };
