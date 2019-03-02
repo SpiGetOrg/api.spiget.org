@@ -14,7 +14,7 @@ module.exports = function (express, config) {
 
     router.post("/register", function (req, res) {
         if (config.server.mode !== "master") {
-            res.status(400).json({error: "Cannot modify webhooks on this server"});
+            util.redirectToMaster(req, res, config);
             return;
         }
         let url = req.body.url;
@@ -91,7 +91,7 @@ module.exports = function (express, config) {
 
     router.delete("/delete/:id/:secret", function (req, res) {
         if (config.server.mode !== "master") {
-            res.status(400).json({error: "Cannot modify webhooks on this server"});
+            util.redirectToMaster(req, res, config);
             return;
         }
 

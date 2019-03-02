@@ -169,6 +169,11 @@ module.exports = function (express, config) {
                 return;
             }
 
+            if (config.server.mode !== "master") {
+                util.redirectToMaster(req, res, config);
+                return;
+            }
+
             let file = util.makeDownloadFile(config, String(resource._id), resource.file.type);
             if (!fs.existsSync(file)) {
                 res.status(404).json({error: "file not found"})

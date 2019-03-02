@@ -246,3 +246,14 @@ module.exports.makeDownloadFile = function (config, resource, type = ".jar") {
     //// <root>/1/2/3/1234.jar
     return path.join(root, split.join("/"), resource + type);
 };
+
+
+module.exports.redirectToMaster = function (req,res, config) {
+    if (config.server.masterHost && config.server.masterHost.length > 0) {
+        let url = req.protocol+"://"+config.server.masterHost+req.originalUrl;
+        console.log("Redirecting slave request to master:", url);
+        res.redirect(url);
+    }else{
+        console.warn("Unable to redirect slave request to master, as no master host is configured");
+    }
+};

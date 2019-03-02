@@ -3,12 +3,21 @@ let config = {};
 config.port = 3012;
 config.server = {
     name: "default",
-    mode: "master"
+    mode: "master",
+    masterHost: ""
 };
 
 config.resourceFileRoot = "/home/spiget/resources/download/";
 
 config.mongo = {
+    useTunnel: false,
+    tunnel: {
+        username: "mongo",
+        host: "1.2.3.4",
+        privateKey: require("fs").readFileSync("./id_rsa"),
+        port: 22,
+        dstPort: 27017
+    },
     user: "",
     pass: "",
     address: "localhost",
