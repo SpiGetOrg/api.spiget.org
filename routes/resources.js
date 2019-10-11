@@ -6,6 +6,7 @@ const ResourceReview = require("../db/schemas/resourceReview").model;
 const ResourceUpdate = require("../db/schemas/resourceUpdate").model;
 const ResourceVersion = require("../db/schemas/resourceVersion").model;
 const Author = require("../db/schemas/author").model;
+const UpdateRequest = require("../db/schemas/updateRequest").model;
 
 
 module.exports = function (express, config) {
@@ -91,7 +92,7 @@ module.exports = function (express, config) {
 
 
     router.get("/:resource(\\d+)", function (req, res) {
-        Resource.findOne({_id: req.params.resource}).select(util.selectFields(req,util.resourceAllFields)).lean().exec(function (err, resource) {
+        Resource.findOne({_id: req.params.resource}).select(util.selectFields(req, util.resourceAllFields)).lean().exec(function (err, resource) {
             if (err) {
                 return console.error(err);
             }
@@ -297,6 +298,39 @@ module.exports = function (express, config) {
                 res.redirect("https://spigotmc.org/resources/" + version.resource + "/download?version=" + version._id);
             });
         }
+    });
+
+    router.post("/:resource(\\d+)/requestUpdate", function (req, res) {
+        if (config.server.mode !== "master") {
+            util.redirectToMaster(req, res, config);
+            return;
+        }
+
+        UpdateRequest.findOne({requestedId: req.params.resource}, function (err, duplicate) {
+            if (err) return console.log(err);
+            if (duplicate) {
+                res.status(400).json({error: "Duplicate Update Request"});
+                return;
+            }
+
+            let request = new UpdateRequest({
+                requestedId: req.params.resource,
+                requested: Date.now(),
+                versions: req.body.versions !== false,
+                updates: req.body.updates !== false,
+                reviews: req.body.updates !== false
+            });
+            request.save(function (err, saved) {
+                if (err) return console.log(err);
+                res.json({
+                    msg: "Resource update requested",
+                    resource: saved.requestedId,
+                    versions: saved.versions,
+                    updates: saved.updates,
+                    reviews: saved.reviews
+                })
+            })
+        })
     });
 
     return router;
