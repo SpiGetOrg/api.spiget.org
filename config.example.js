@@ -31,4 +31,8 @@ config.cloudflare = {
     email: ""
 };
 
+config.swagger = {
+
+};
+
 module.exports = config;
