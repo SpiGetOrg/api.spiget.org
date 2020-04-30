@@ -47,6 +47,19 @@ module.exports = function (express, config) {
                                 }
                             }
                         },
+                        restFetch: {
+                            start: status["fetch.rest.start"],
+                            startString: new Date(status["fetch.rest.start"]),
+                            end: status["fetch.rest.end"],
+                            active: status["fetch.rest.end"] === 0,
+                            n: {
+                                num: status["fetch.rest.num"],
+                                start: status["fetch.rest.n.start"],
+                                end: status["fetch.rest.n.end"],
+                                max: status["fetch.rest.item.max"],
+                                index: status["fetch.rest.item"]
+                            }
+                        },
                         existence: {
                             start: status["existence.start"],
                             startString: new Date(status["existence.start"]),
