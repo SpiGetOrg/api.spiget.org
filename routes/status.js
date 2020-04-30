@@ -4,6 +4,7 @@ const Author = require("../db/schemas/author").model;
 const Category = require("../db/schemas/category").model;
 const ResourceUpdate = require("../db/schemas/resourceUpdate").model;
 const ResourceVersion = require("../db/schemas/resourceVersion").model;
+const ResourceReview = require("../db/schemas/resourceReview").model;
 
 module.exports = function (express, config) {
     let router = express.Router();
@@ -23,7 +24,8 @@ module.exports = function (express, config) {
                 Author.count().exec(),
                 Category.count().exec(),
                 ResourceUpdate.count().exec(),
-                ResourceVersion.count().exec()
+                ResourceVersion.count().exec(),
+                ResourceReview.count().exec()
             ];
 
             Promise.all(countPromises).then(counts=>{
@@ -78,7 +80,8 @@ module.exports = function (express, config) {
                         authors:  counts[1],
                         categories: counts[2],
                         resource_updates:counts[3],
-                        resource_versions:counts[4]
+                        resource_versions:counts[4],
+                        reviews: counts[5]
                     }
                 })
             })
