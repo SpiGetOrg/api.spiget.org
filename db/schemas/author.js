@@ -9,6 +9,10 @@ let authorSchema = new Schema({
     icon: {
         url: String,
         data: String
+    },
+    identities: {
+        type: Map,
+        of: String
     }
 }, {collection: "authors"});
 module.exports = {

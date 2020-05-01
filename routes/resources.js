@@ -314,6 +314,7 @@ module.exports = function (express, config) {
             }
 
             let request = new UpdateRequest({
+                type: "resource",
                 requestedId: req.params.resource,
                 requested: Date.now(),
                 versions: req.body.versions !== false,

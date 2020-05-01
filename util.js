@@ -62,7 +62,8 @@ module.exports.resourceAllFields = [
 module.exports.authorAllFields = [
     "_id",
     "name",
-    "icon"
+    "icon",
+    "identities"
 ];
 
 module.exports.reviewAllFields = [
