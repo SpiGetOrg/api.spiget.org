@@ -253,7 +253,7 @@ module.exports.redirectToMaster = function (req,res, config) {
     if (config.server.masterHost && config.server.masterHost.length > 0) {
         let url = req.protocol+"://"+config.server.masterHost+req.originalUrl;
         console.log("Redirecting slave request to master:", url);
-        res.redirect(url);
+        res.redirect(307, url);
     }else{
         console.warn("Unable to redirect slave request to master, as no master host is configured");
     }
