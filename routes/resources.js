@@ -212,7 +212,7 @@ module.exports = function (express, config) {
 
     router.get("/:resource(\\d+)/updates/:update(\\d+|latest)", function (req, res) {
         if ("latest" === req.params.update) {
-            ResourceUpdate.findOne({"resource": req.params.resource}).sort({"date": 1}).lean().exec(function (err, update) {
+            ResourceUpdate.findOne({"resource": req.params.resource}).sort({"date": -1}).lean().exec(function (err, update) {
                 if (err) {
                     return console.error(err);
                 }
