@@ -248,6 +248,16 @@ module.exports = function (express, config) {
         });
     });
 
+    function versionIdOrUuidQuery(idOrUuid) {
+        let query = {};
+        if (idOrUuid > 32) {
+            query.uuid = idOrUuid;
+        } else {
+            query["_id"] = idOrUuid;
+        }
+        return query;
+    }
+
     router.get("/:resource(\\d+)/versions/:version(\\d+|latest)", function (req, res) {
         if ("latest" === req.params.version) {
             ResourceVersion.findOne({"resource": req.params.resource}).sort({"releaseDate": -1}).lean().exec(function (err, version) {
@@ -261,7 +271,7 @@ module.exports = function (express, config) {
                 res.json(util.fixId(version));
             });
         } else {
-            ResourceVersion.findOne({"_id": req.params.version}).lean().exec(function (err, version) {
+            ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version)).lean().exec(function (err, version) {
                 if (err) {
                     return console.error(err);
                 }
@@ -287,7 +297,7 @@ module.exports = function (express, config) {
                 res.redirect("https://spigotmc.org/resources/" + version.resource + "/download?version=" + version._id);
             });
         } else {
-            ResourceVersion.findOne({"_id": req.params.version}, "_id resource").lean().exec(function (err, version) {
+            ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version), "_id resource").lean().exec(function (err, version) {
                 if (err) {
                     return console.error(err);
                 }
