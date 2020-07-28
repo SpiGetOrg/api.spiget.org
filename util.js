@@ -87,6 +87,7 @@ module.exports.updateAllFields = [
 
 module.exports.versionAllFields = [
     "_id",
+    "uuid",
     "downloads",
     "rating",
     "url",
