@@ -259,14 +259,22 @@ module.exports.makeVersionUuid = function (resourceId, authorId, versionName, up
     const dateString = date.getFullYear() + "" + module.exports.pad("" + (date.getMonth() + 1), 2) + module.exports.pad("" + date.getDate(), 2);
     const stringA = "16" + module.exports.trim("" + authorId, 6) + "" + module.exports.trim("" + resourceId, 6) + "" + module.exports.trim(module.exports.pad("" + versionNameNumber, 5), 5);
     const stringB = "16" + module.exports.trim("" + resourceId, 6) + "" + dateString + "" + module.exports.trim(module.exports.pad("" + updateCount, 2), 3);
-    return module.exports.javaUuid(Number(stringA), Number(stringB));
+    return module.exports.javaUuid(BigInt(stringA), BigInt(stringB));
 };
 
-// https://stackoverflow.com/a/64005492/6257838
+// Java UUID#toString
 module.exports.javaUuid = function (mostSigBits, leastSigBits) {
-    const most = mostSigBits.toString("16").padStart(16, "0");
-    const least = leastSigBits.toString("16").padStart(16, "0");
-    return `${ most.substring(0, 8) }-${ most.substring(8, 12) }-${ most.substring(12) }-${ least.substring(0, 4) }-${ least.substring(4) }`;
+    return (module.exports.digits(mostSigBits >> 32n, 8n) + "-" +
+        module.exports.digits(mostSigBits >> 16n, 4n) + "-" +
+        module.exports.digits(mostSigBits, 4n) + "-" +
+        module.exports.digits(leastSigBits >> 48n, 4n) + "-" +
+        module.exports.digits(leastSigBits, 12n));
+};
+
+// Java UUID#digits
+module.exports.digits = function (val, digits) {
+    const hi = 1n << (digits * 4n);
+    return (hi | (val & (hi - 1n))).toString(16).substring(1);
 };
 
 module.exports.makeDownloadFile = function (config, resource, type = ".jar") {
