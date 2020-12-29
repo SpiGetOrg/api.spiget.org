@@ -8,3 +8,6 @@ console.assert("003a9c4f-0625-ae1a-0039-81dfd4c7cae9" === uuid1);
 const uuid2 = util.makeVersionUuid(66275, 22621, "1.01", 1, new Date(1555253985000));
 console.log(uuid2);
 console.assert("0039a5a8-7621-7445-003b-32af47134c79" === uuid2)
+
+const uuid3 = util.makeVersionUuid(28140, 100356, "5.2.35", 39, new Date(1605375640000));
+console.log(uuid3);
