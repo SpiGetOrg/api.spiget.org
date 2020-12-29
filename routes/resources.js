@@ -105,7 +105,6 @@ module.exports = function (express, config) {
             spigotApi.getResource(resource._id).then(spigot => {
                 res.json(Object.assign({}, util.fixId(resource), spigot));
             }).catch(err => {
-                console.warn(err);
                 res.json(util.fixId(resource));
             })
         })
