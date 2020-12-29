@@ -1,6 +1,8 @@
 const util = require("../util");
 const fs = require("fs");
 
+const spigotApi = require("../spigotapi");
+
 const Resource = require("../db/schemas/resource").model;
 const ResourceReview = require("../db/schemas/resourceReview").model;
 const ResourceUpdate = require("../db/schemas/resourceUpdate").model;
@@ -100,7 +102,12 @@ module.exports = function (express, config) {
                 res.status(404).json({error: "resource not found"})
                 return;
             }
-            res.json(util.fixId(resource))
+            spigotApi.getResource(resource._id).then(spigot => {
+                res.json(Object.assign({}, util.fixId(resource), spigot));
+            }).catch(err => {
+                console.warn(err);
+                res.json(util.fixId(resource));
+            })
         })
     });
 
