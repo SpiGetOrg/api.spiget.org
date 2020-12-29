@@ -1,4 +1,4 @@
-const request = require("request");
+const axios = require("axios");
 
 module.exports = function (express, config) {
     let router = express.Router();
@@ -7,16 +7,13 @@ module.exports = function (express, config) {
         let days = parseInt(req.params.days || "7");
         let minutes = days * 1440;
 
-        request({
-            url: "https://api.cloudflare.com/client/v4/zones/" + config.cloudflare.zone + "/analytics/dashboard?since=-" + Math.abs(minutes),
+        axios.get("https://api.cloudflare.com/client/v4/zones/" + config.cloudflare.zone + "/analytics/dashboard?since=-" + Math.abs(minutes), {
             headers: {
                 "X-Auth-Email": config.cloudflare.email,
                 "X-Auth-Key": config.cloudflare.key
-            },
-            json: true
-        }, function (err, response, body) {
-            if (err) return console.log(err);
-            let timeArray = body.result.timeseries;
+            }
+        }).then(response => {
+            let timeArray = response.data.result.timeseries;
 
             let data = [];
             for (let i = 0; i < timeArray.length; i++) {
@@ -30,9 +27,10 @@ module.exports = function (express, config) {
             }
 
             res.json(data);
-        });
+        }).catch(err => {
+            console.log(err);
+        })
     });
-
 
     return router;
 };
