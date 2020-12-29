@@ -1,4 +1,5 @@
 const path = require("path");
+const uuid = require("uuid/v4");
 
 module.exports.resourceListFields = [
     "_id",
@@ -240,6 +241,34 @@ module.exports.forceObject = function (arr) {
     return arr;
 };
 
+module.exports.pad = function (s, l) {
+    while (s.length < l) {
+        s = "0" + s;
+    }
+    return s;
+};
+
+module.exports.trim = function (s, l) {
+    if (s.length <= l) return s;
+    return s.substring(s.length - 1);
+};
+
+// https://github.com/SpiGetOrg/SpigetData/blob/master/src/main/java/org/spiget/data/resource/version/ResourceVersion.java#L40
+module.exports.makeVersionUuid = function (resourceId, authorId, versionName, updateCount, date) {
+    const versionNameNumber = versionName.replace(/[^\d]/g, "");
+    const dateString = date.getFullYear() + "" + module.exports.pad("" + (date.getMonth() + 1), 2) + module.exports.pad("" + date.getDate(), 2);
+    const stringA = "16" + module.exports.trim("" + authorId, 6) + "" + module.exports.trim("" + resourceId, 6) + "" + module.exports.trim(module.exports.pad("" + versionNameNumber, 5), 5);
+    const stringB = "16" + module.exports.trim("" + resourceId, 6) + "" + dateString + "" + module.exports.trim(module.exports.pad("" + updateCount, 2), 3);
+    return module.exports.javaUuid(Number(stringA), Number(stringB));
+};
+
+// https://stackoverflow.com/a/64005492/6257838
+module.exports.javaUuid = function (mostSigBits, leastSigBits) {
+    const most = mostSigBits.toString("16").padStart(16, "0");
+    const least = leastSigBits.toString("16").padStart(16, "0");
+    return `${ most.substring(0, 8) }-${ most.substring(8, 12) }-${ most.substring(12) }-${ least.substring(0, 4) }-${ least.substring(4) }`;
+};
+
 module.exports.makeDownloadFile = function (config, resource, type = ".jar") {
     let root = config.resourceFileRoot;
     let split = resource.split("");
@@ -250,12 +279,12 @@ module.exports.makeDownloadFile = function (config, resource, type = ".jar") {
 };
 
 
-module.exports.redirectToMaster = function (req,res, config) {
+module.exports.redirectToMaster = function (req, res, config) {
     if (config.server.masterHost && config.server.masterHost.length > 0) {
-        let url = req.protocol+"://"+config.server.masterHost+req.originalUrl;
+        let url = req.protocol + "://" + config.server.masterHost + req.originalUrl;
         console.log("Redirecting slave request to master:", url);
         res.redirect(307, url);
-    }else{
+    } else {
         console.warn("Unable to redirect slave request to master, as no master host is configured");
     }
 };
