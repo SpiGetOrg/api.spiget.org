@@ -257,7 +257,7 @@ module.exports = function (express, config) {
 
     function versionIdOrUuidQuery(idOrUuid) {
         let query = {};
-        if (idOrUuid > 32) {
+        if (idOrUuid.length > 32) {
             query.uuid = idOrUuid;
         } else {
             query["_id"] = idOrUuid;
