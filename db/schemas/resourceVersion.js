@@ -1,7 +1,11 @@
 let mongoose = require('mongoose')
     , Schema = mongoose.Schema;
 let resourceVersionSchema = new Schema({
-    _id:Number,
+    _id: Number,
+    uuid: {
+        type: String,
+        index: true
+    },
     name: {
         type: String,
         index: true
@@ -11,7 +15,6 @@ let resourceVersionSchema = new Schema({
         type: Number,
         index: true
     },
-
     downloads: Number,
     rating: {
         count: Number,
