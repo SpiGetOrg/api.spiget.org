@@ -21,15 +21,15 @@ module.exports.getResource = function (id) {
     })
 };
 
-module.exports.getLatestResourceVersion = function (id) {
-    return axios.get("https://api.spigotmc.org/simple/0.1/index.php?action=getResource&id=" + id, {
-        headers: {
-            "User-Agent": "spiget"
-        }
-    }).then(response => {
-        const s = response.data;
-        const d = {};
-        //TODO
-        return d;
-    })
-};
+// module.exports.getLatestResourceVersion = function (id) {
+//     return axios.get("https://api.spigotmc.org/simple/0.1/index.php?action=getResource&id=" + id, {
+//         headers: {
+//             "User-Agent": "spiget"
+//         }
+//     }).then(response => {
+//         const s = response.data;
+//         const d = {};
+//         //TODO
+//         return d;
+//     })
+// };
