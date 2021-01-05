@@ -23,6 +23,7 @@ Sentry.init({
             app: app
         })
     ],
+    tracesSampleRate: 0.2,
     serverName: config.server.name
 });
 
