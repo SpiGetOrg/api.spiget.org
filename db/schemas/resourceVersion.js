@@ -4,11 +4,10 @@ let resourceVersionSchema = new Schema({
     _id: Number,
     uuid: {
         type: String,
-        index: true
+        // index: true
     },
     name: {
-        type: String,
-        index: true
+        type: String
     },
     releaseDate: Number,
     resource: {
