@@ -9,6 +9,8 @@
   "author": "inventivetalent",
   "license": "Apache-2.0",
   "dependencies": {
+    "@sentry/node": "^5.29.2",
+    "@sentry/tracing": "^5.29.2",
     "axios": "^0.21.1",
     "body-parser": "^1.18.3",
     "express": "^4.16.4",

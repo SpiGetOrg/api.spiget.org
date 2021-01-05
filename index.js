@@ -2,6 +2,8 @@ let express = require('express');
 let app = express();
 let http = require('http');
 let server = http.Server(app);
+const Sentry = require('@sentry/node');
+const Tracing = require("@sentry/tracing");
 let bodyParser = require("body-parser");
 let morgan = require('morgan');
 let mongoose = require("mongoose");
@@ -13,6 +15,19 @@ let config = require("./config");
 let util = require("./util")
 let port = process.env.PORT || config.port || 3012;
 
+Sentry.init({
+    dsn: config.sentry.dsn,
+    integrations: [
+        new Sentry.Integrations.Http({tracing: true}),
+        new Tracing.Integrations.Express({
+            app: app
+        })
+    ],
+    serverName: config.server.name
+});
+
+app.use(Sentry.Handlers.requestHandler());
+app.use(Sentry.Handlers.tracingHandler());
 
 app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');
@@ -81,6 +96,8 @@ app.use("/v2/reviews", require("./routes/reviews")(express, config));
 app.use("/v2/search", require("./routes/search")(express, config));
 app.use("/v2/metrics", require("./routes/metrics")(express, config));
 app.use("/v2/webhook", require("./routes/webhook")(express, config));
+
+app.use(Sentry.Handlers.errorHandler());
 
 app.use(function (err, req, res, next) {
     console.error(err);
