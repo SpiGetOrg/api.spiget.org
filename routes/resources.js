@@ -335,7 +335,8 @@ module.exports = function (express, config) {
                 requested: Date.now(),
                 versions: req.body.versions !== false,
                 updates: req.body.updates !== false,
-                reviews: req.body.updates !== false
+                reviews: req.body.updates !== false,
+                delete: req.body.delete !== false
             });
             request.save(function (err, saved) {
                 if (err) return console.log(err);
@@ -344,7 +345,8 @@ module.exports = function (express, config) {
                     resource: saved.requestedId,
                     versions: saved.versions,
                     updates: saved.updates,
-                    reviews: saved.reviews
+                    reviews: saved.reviews,
+                    delete: saved.delete
                 })
             })
         })
