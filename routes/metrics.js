@@ -7,28 +7,53 @@ module.exports = function (express, config) {
         let days = parseInt(req.params.days || "7");
         let minutes = days * 1440;
 
-        axios.get("https://api.cloudflare.com/client/v4/zones/" + config.cloudflare.zone + "/analytics/dashboard?since=-" + Math.abs(minutes), {
+        let startTime = new Date(Date.now() - (minutes * 60 * 1000));
+        axios.post("https://api.cloudflare.com/client/v4/graphql/", {
+            query: "{\n" +
+                "  viewer {\n" +
+                "    zones(filter: { zoneTag: \"" + config.cloudflare.zone + "\" }) {\n" +
+                "      httpRequests1dGroups(\n" +
+                "        orderBy: [date_ASC]\n" +
+                "        limit: 1000\n" +
+                `"        filter: { datetime_gt: \"${ startTime.getFullYear() }-${ startTime.getMonth() + 1 }-${ startTime.getDate() }\" }\n"` +
+                "      ) {\n" +
+                "        date: dimensions {\n" +
+                "          date\n" +
+                "        }\n" +
+                "        sum {\n" +
+                "          cachedRequests\n" +
+                "          requests\n" +
+                "        }\n" +
+                "        uniq {\n" +
+                "          uniques\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}",
+            variables: {}
+        }, {
             headers: {
                 "X-Auth-Email": config.cloudflare.email,
                 "X-Auth-Key": config.cloudflare.key
             }
-        }).then(response => {
-            let timeArray = response.data.result.timeseries;
+        }).then(response=>{
+            let arr = response.data.data.viewer.zones[0].httpRequests1dGroups;
 
             let data = [];
-            for (let i = 0; i < timeArray.length; i++) {
-                let entry = timeArray[i];
+            for(let entry of arr) {
                 data.push({
-                    time: entry.since,
-                    timestamp: Date.parse(entry.since),
-                    total: entry.requests.all,
-                    unique: entry.uniques.all
+                    time: entry.date.date,
+                    timestamp: Date.parse(entry.date.date),
+                    total: entry.sum.requests,
+                    unique: entry.uniq.unique
                 })
             }
 
             res.json(data);
         }).catch(err => {
             console.log(err);
+            res.status(500);
         })
     });
 
