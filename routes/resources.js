@@ -167,7 +167,7 @@ module.exports = function (express, config) {
     // Download
 
     router.get("/:resource(\\d+)/download", function (req, res) {
-        Resource.findOne({_id: req.params.resource}, "_id name file").lean().exec(function (err, resource) {
+        Resource.findOne({_id: req.params.resource}, "_id name file external").lean().exec(function (err, resource) {
             if (err) {
                 return console.error(err);
             }
@@ -176,19 +176,13 @@ module.exports = function (express, config) {
                 return;
             }
 
-            if (config.server.mode !== "master") {
-                util.redirectToMaster(req, res, config);
+            if (resource.external) {
+                //TODO: allow downloads for files with externalUrl
+                res.status(400).json({error: "cannot download external resource"});
                 return;
             }
 
-            let file = util.makeDownloadFile(config, String(resource._id), resource.file.type);
-            if (!fs.existsSync(file)) {
-                res.status(404).json({error: "file not found"})
-                return;
-            }
-
-            let fileName = resource.name + "#" + resource._id + resource.file.type;
-            res.download(file, fileName);
+            res.redirect("https://cdn.spiget.org/file/spiget-resources/" + resource._id + resource.file.type);
         })
     });
 
