@@ -177,11 +177,16 @@ module.exports = function (express, config) {
             }
 
             if (resource.external) {
-                //TODO: allow downloads for files with externalUrl
-                res.status(400).json({error: "cannot download external resource"});
-                return;
+                if (resource.file.externalUrl) {
+                    res.header("X-Spiget-File-Source", "external");
+                    res.redirect(resource.file.externalUrl)
+                } else {
+                    res.status(400).json({error: "cannot download external resource"});
+                    return;
+                }
             }
 
+            res.header("X-Spiget-File-Source", "cdn");
             res.redirect("https://cdn.spiget.org/file/spiget-resources/" + resource._id + resource.file.type);
         })
     });
@@ -285,6 +290,7 @@ module.exports = function (express, config) {
     });
 
     router.get("/:resource(\\d+)/versions/:version(\\d+|latest)/download", function (req, res) {
+        //TODO externalUrl download
         if ("latest" === req.params.version) {
             ResourceVersion.findOne({"resource": req.params.resource}, "_id resource").sort({"releaseDate": -1}).lean().exec(function (err, version) {
                 if (err) {
