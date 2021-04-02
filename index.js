@@ -11,6 +11,7 @@ let Schema = mongoose.Schema;
 let path = require("path");
 let fs = require("fs");
 let rfs = require("rotating-file-stream");
+let metrics = require("./metrics");
 let config = require("./config");
 let util = require("./util")
 let port = process.env.PORT || config.port || 3012;
@@ -45,6 +46,8 @@ app.use(function (req, res, next) {
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json({extended: true}));
+
+app.use(metrics.apiRequestsMiddleware);
 
 app.use(function (req, res, next) {
     req.realAddress = req.header("x-real-ip") || req.realAddress;
