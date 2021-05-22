@@ -179,7 +179,8 @@ module.exports = function (express, config) {
             if (resource.external) {
                 if (resource.file.externalUrl) {
                     res.header("X-Spiget-File-Source", "external");
-                    res.redirect(resource.file.externalUrl)
+                    res.redirect(resource.file.externalUrl);
+                    return;
                 } else {
                     res.status(400).json({error: "cannot download external resource"});
                     return;
