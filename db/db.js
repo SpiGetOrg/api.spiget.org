@@ -1,3 +1,5 @@
+const Sentry = require('@sentry/node');
+
 module.exports = function (mongoose, config) {
 
     if (config.mongo.useTunnel) {
@@ -25,4 +27,13 @@ function connectMongo(mongoose, config) {
     }
 
     mongoose.Promise = Promise;
+
+    mongoose.connection.on("error", err => {
+        Sentry.captureException(err);
+        console.warn("Mongo connection error, restarting app");
+        setTimeout(() => {
+            process.exit(1);
+        }, 10000);
+    })
+
 }
