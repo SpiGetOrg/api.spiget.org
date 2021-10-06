@@ -35,6 +35,7 @@ module.exports.resourceAllFields = [
     "external",
     "file",
     "description",
+    "documentation",
     "likes",
     "testedVersions",
     "sourceCodeLink",
