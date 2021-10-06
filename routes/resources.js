@@ -102,6 +102,7 @@ module.exports = function (express, config) {
                 res.status(404).json({error: "resource not found"})
                 return;
             }
+            //TODO: apply field filter to this aswell
             spigotApi.getResource(resource._id).then(spigot => {
                 res.json(Object.assign({}, util.fixId(resource), spigot));
             }).catch(err => {
