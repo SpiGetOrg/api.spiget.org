@@ -6,6 +6,7 @@ module.exports.resourceListFields = [
     "name",
     "tag",
     "contributors",
+    "external",
     "likes",
     "file",
     "testedVersions",
