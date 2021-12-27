@@ -76,7 +76,8 @@ module.exports.reviewAllFields = [
     "message",
     "version",
     "date",
-    "resource"
+    "resource",
+    "responseMessage"
 ];
 
 module.exports.updateAllFields = [
