@@ -35,4 +35,13 @@ config.swagger = {
 
 };
 
+config.puller = {
+    endpoint: "/_git_webhook",
+    secret: "",
+    vars: {
+        appName: "spiget"
+    },
+    logCommands: true
+};
+
 module.exports = config;
