@@ -79,7 +79,7 @@ app.set('json spaces', 2);
 
 let updatingApp = false;
 {// Git Puller
-    console.log("Setting up git puller");
+    console.log("Setting up git puller"); 
 
     const updateDelay = Math.ceil(Math.random() * 10000) + Math.ceil(Math.random() * 10000);
     const puller = new Puller({
