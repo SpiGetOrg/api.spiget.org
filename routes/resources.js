@@ -136,7 +136,7 @@ module.exports = function (express, config) {
                 res.status(404).json({error: "resource not found"})
                 return;
             }
-            Author.findOne({_id: resource.author.id}).lean().exec(function (err, author) {
+            Author.findOne({_id: resource.author.id}).select(util.selectFields(req, util.authorAllFields)).lean().exec(function (err, author) {
                 if (err) {
                     return console.error(err);
                 }
@@ -219,7 +219,7 @@ module.exports = function (express, config) {
 
     router.get("/:resource(\\d+)/updates/:update(\\d+|latest)", function (req, res) {
         if ("latest" === req.params.update) {
-            ResourceUpdate.findOne({"resource": req.params.resource}).sort({"date": -1}).lean().exec(function (err, update) {
+            ResourceUpdate.findOne({"resource": req.params.resource}).sort({"date": -1}).select(util.updateAllFields).lean().exec(function (err, update) {
                 if (err) {
                     return console.error(err);
                 }
@@ -230,7 +230,7 @@ module.exports = function (express, config) {
                 res.json(util.fixId(update));
             });
         } else {
-            ResourceUpdate.findOne({"_id": req.params.update}).lean().exec(function (err, update) {
+            ResourceUpdate.findOne({"_id": req.params.update}).select(util.updateAllFields).lean().exec(function (err, update) {
                 if (err) {
                     return console.error(err);
                 }
@@ -267,7 +267,7 @@ module.exports = function (express, config) {
 
     router.get("/:resource(\\d+)/versions/:version(\\d+|latest)", function (req, res) {
         if ("latest" === req.params.version) {
-            ResourceVersion.findOne({"resource": req.params.resource}).sort({"releaseDate": -1}).lean().exec(function (err, version) {
+            ResourceVersion.findOne({"resource": req.params.resource}).sort({"releaseDate": -1}).select(util.versionAllFields).lean().exec(function (err, version) {
                 if (err) {
                     return console.error(err);
                 }
@@ -278,7 +278,7 @@ module.exports = function (express, config) {
                 res.json(util.fixId(version));
             });
         } else {
-            ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version)).lean().exec(function (err, version) {
+            ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version)).select(util.versionAllFields).lean().exec(function (err, version) {
                 if (err) {
                     return console.error(err);
                 }
