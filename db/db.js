@@ -30,6 +30,7 @@ function connectMongo(mongoose, config) {
 
     mongoose.connection.on("error", err => {
         Sentry.captureException(err);
+        console.warn(err);
         console.warn("Mongo connection error, restarting app");
         setTimeout(() => {
             process.exit(1);
