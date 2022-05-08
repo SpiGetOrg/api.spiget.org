@@ -17,7 +17,7 @@ module.exports = function (express, config) {
     });
 
     router.get("/trends", function (req, res) {
-        Review.find({}, "rating").lean().exec(function (err, reviews) {
+        Review.find({}, "rating").read("secondaryPreferred").lean().exec(function (err, reviews) {
             if (err) {
                 return console.error(err);
             }
@@ -39,7 +39,7 @@ module.exports = function (express, config) {
     });
 
     router.get("/:review(\\d+)", function (req, res) {
-        Review.findOne({_id: req.params.review}).select(util.selectFields(req, util.reviewAllFields)).lean().exec(function (err, review) {
+        Review.findOne({_id: req.params.review}).select(util.selectFields(req, util.reviewAllFields)).read("secondaryPreferred").lean().exec(function (err, review) {
             if (err) {
                 return console.error(err);
             }

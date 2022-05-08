@@ -37,7 +37,7 @@ module.exports = function (express, config) {
 
 
     router.get("/:author(\\d+)", function (req, res) {
-        Author.findOne({_id: req.params.author}).select(util.selectFields(req,util.authorAllFields)).lean().exec(function (err, author) {
+        Author.findOne({_id: req.params.author}).select(util.selectFields(req,util.authorAllFields)).read("secondaryPreferred").lean().read("secondaryPreferred").exec(function (err, author) {
             if (err) {
                 return console.error(err);
             }
@@ -50,7 +50,7 @@ module.exports = function (express, config) {
     });
 
     router.get("/:author(\\d+)/go", function (req, res) {
-        Author.findOne({_id: req.params.author}).select("_id").lean().exec(function (err, author) {
+        Author.findOne({_id: req.params.author}).select("_id").read("secondaryPreferred").lean().exec(function (err, author) {
             if (err) {
                 return console.error(err);
             }
@@ -66,7 +66,7 @@ module.exports = function (express, config) {
     // Avatar
 
     router.get("/:author(\\d+)/avatar/:type?", function (req, res) {
-        Author.findOne({_id: req.params.author}, "_id icon").lean().exec(function (err, author) {
+        Author.findOne({_id: req.params.author}, "_id icon").read("secondaryPreferred").lean().exec(function (err, author) {
             if (err) {
                 return console.error(err);
             }

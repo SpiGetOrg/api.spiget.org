@@ -10,7 +10,7 @@ module.exports = function (express, config) {
     let router = express.Router();
 
     router.get("/", function (req, res) {
-        Status.find({}).lean().exec(function (err, statusData) {
+        Status.find({}).read("secondaryPreferred").lean().exec(function (err, statusData) {
             if (err) {
                 return console.error(err);
             }
