@@ -35,6 +35,12 @@ function connectMongo(mongoose, config) {
         setTimeout(() => {
             process.exit(1);
         }, 10000);
-    })
+    });
+    mongoose.connection.on('disconnected', () => {
+        console.warn("Mongo disconnected, restarting app");
+        setTimeout(() => {
+            process.exit(1);
+        }, 10000);
+    });
 
 }
