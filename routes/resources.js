@@ -324,6 +324,10 @@ module.exports = function (express, config) {
             return;
         }
 
+        if (req.params.resource <= 0) {
+            return;
+        }
+
         UpdateRequest.findOne({requestedId: req.params.resource}, function (err, duplicate) {
             if (err) return console.log(err);
             if (duplicate) {
@@ -351,7 +355,7 @@ module.exports = function (express, config) {
                     delete: saved.delete
                 })
             })
-        })
+        });
     });
 
     return router;
