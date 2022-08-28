@@ -1,4 +1,5 @@
 const util = require("../util");
+const {escapeRegex} = require("../util");
 
 const Author = require("../db/schemas/author").model;
 const Resource = require("../db/schemas/resource").model;
@@ -18,7 +19,7 @@ module.exports = function (express, config) {
         }
 
         let query = {};
-        query[field] = {"$regex": new RegExp(req.params.query), "$options": "i"};
+        query[field] = {"$regex": new RegExp(escapeRegex(req.params.query)), "$options": "i"};
 
         Resource.paginate(query, util.paginateReq(req, util.resourceListFields), function (err, resources) {
             if (err) {
@@ -40,7 +41,7 @@ module.exports = function (express, config) {
         }
 
         let query = {};
-        query[field] = {"$regex": new RegExp(req.params.query), "$options": "i"};
+        query[field] = {"$regex": new RegExp(escapeRegex(req.params.query)), "$options": "i"};
 
         Author.paginate(query, util.paginateReq(req, util.authorAllFields), function (err, authors) {
             if (err) {

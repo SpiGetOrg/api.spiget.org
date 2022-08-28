@@ -299,3 +299,7 @@ module.exports.redirectToMaster = function (req, res, config) {
         console.warn("Unable to redirect slave request to master, as no master host is configured");
     }
 };
+
+module.exports.escapeRegex = function(string) {
+    return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
