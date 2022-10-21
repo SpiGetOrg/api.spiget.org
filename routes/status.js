@@ -20,12 +20,12 @@ module.exports = function (express, config) {
             }
 
             let countPromises = [
-                Resource.count().exec(),
-                Author.count().exec(),
-                Category.count().exec(),
-                ResourceUpdate.count().exec(),
-                ResourceVersion.count().exec(),
-                ResourceReview.count().exec()
+                Resource.estimatedDocumentCount().exec(),
+                Author.estimatedDocumentCount().exec(),
+                Category.countDocuments().exec(),
+                ResourceUpdate.estimatedDocumentCount().exec(),
+                ResourceVersion.estimatedDocumentCount().exec(),
+                ResourceReview.estimatedDocumentCount().exec()
             ];
 
             Promise.all(countPromises).then(counts=>{
