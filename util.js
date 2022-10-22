@@ -155,6 +155,7 @@ module.exports.paginateReq = function (req, defaultFields, other) {
             sort = sort.substr(1);
         }
         sort = sort.trim();
+        if (sort.length <= 0) continue;
 
         if (sort === "id") sort = "_id";
         sortObj[sort] = sortMode;
