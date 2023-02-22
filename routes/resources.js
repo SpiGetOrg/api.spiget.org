@@ -2,6 +2,7 @@ const util = require("../util");
 const fs = require("fs");
 
 const spigotApi = require("../spigotapi");
+const https = require("https");
 
 const Resource = require("../db/schemas/resource").model;
 const ResourceReview = require("../db/schemas/resourceReview").model;
@@ -291,6 +292,26 @@ module.exports = function (express, config) {
         }
     });
 
+    function proxyDownload(req,res, version) {
+        if (config.server.mode !== "master") {
+            util.redirectToMaster(req, res, config);
+            return;
+        }
+        const url = "https://www.spigotmc.org/resources/" + version.resource + "/download?version=" + version._id;
+        console.log("proxying download for " + url)
+        https.get(url, {
+            headers: {
+                'User-Agent': config.userAgent
+            }
+        }, resp => {
+            console.log(resp.statusCode + " " + url);
+            res.set('Content-disposition', 'attachment; filename=' + encodeURI(version.uuid));
+            res.set('Content-Type', 'application/octet-stream');
+            res.set('Cache-Control', 'public, max-age=604800, immutable')
+            resp.pipe(res);
+        })
+    }
+
     router.get("/:resource(\\d+)/versions/:version(\\d+|latest)/download", function (req, res) {
         //TODO externalUrl download
         if ("latest" === req.params.version) {
@@ -314,6 +335,32 @@ module.exports = function (express, config) {
                     return;
                 }
                 res.redirect("https://spigotmc.org/resources/" + version.resource + "/download?version=" + version._id);
+            });
+        }
+    });
+
+    router.get("/:resource(\\d+)/versions/:version(\\d+|latest)/download/proxy", function (req, res) {
+        if ("latest" === req.params.version) {
+            ResourceVersion.findOne({"resource": req.params.resource}, "_id resource uuid").sort({"releaseDate": -1}).read("secondaryPreferred").lean().exec(function (err, version) {
+                if (err) {
+                    return console.error(err);
+                }
+                if (!version) {
+                    res.status(404).json({error: "version not found"})
+                    return;
+                }
+                proxyDownload(req, res, version);
+            });
+        } else {
+            ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version), "_id resource uuid").read("secondaryPreferred").lean().exec(function (err, version) {
+                if (err) {
+                    return console.error(err);
+                }
+                if (!version) {
+                    res.status(404).json({error: "version not found"})
+                    return;
+                }
+                proxyDownload(req, res, version);
             });
         }
     });
