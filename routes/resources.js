@@ -305,7 +305,8 @@ module.exports = function (express, config) {
             }
         }, resp => {
             console.log(resp.statusCode + " " + url);
-            res.set('Content-disposition', 'attachment; filename=' + encodeURI(version.uuid));
+            const filename = resp.headers['content-disposition'].split("=")[1].replace(";", "");
+            res.set('Content-disposition', 'attachment; filename=' + encodeURI(filename));
             res.set('Content-Type', 'application/octet-stream');
             res.set('Cache-Control', 'public, max-age=604800, immutable')
             resp.pipe(res);
