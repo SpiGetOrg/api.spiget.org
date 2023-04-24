@@ -21,6 +21,8 @@ module.exports.resourceListFields = [
     "updateDate",
     "downloads",
     "icon",
+    "icon.url",
+    "icon.data",
     "author",
     "premium",
     "existenceStatus",
@@ -52,6 +54,8 @@ module.exports.resourceAllFields = [
     "updateDate",
     "downloads",
     "icon",
+    "icon.url",
+    "icon.data",
     "reviews",
     "premium",
     "price",
@@ -179,6 +183,18 @@ function selectFields(req, defaultFields) {
             allowedFields.push(fieldSplit[i]);
         }
     }
+
+    // hack to avoid path collisions
+    if (allowedFields.includes('icon')) {
+        let urlInd = allowedFields.indexOf('icon.url');
+        if (urlInd !== -1) {
+            allowedFields.splice(urlInd, 1);
+        }
+        let dataInd = allowedFields.indexOf('icon.data');
+        if (dataInd !== -1) {
+            allowedFields.splice(dataInd, 1);
+        }
+    }
     return allowedFields.join(" ");
 }
 
@@ -300,6 +316,6 @@ module.exports.redirectToMaster = function (req, res, config) {
     }
 };
 
-module.exports.escapeRegex = function(string) {
+module.exports.escapeRegex = function (string) {
     return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
