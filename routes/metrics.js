@@ -13,7 +13,7 @@ module.exports = function (express, config) {
         if (m.length < 2) {
             m = "0" + m;
         }
-        let d = `${ startTime.getDate() }`;
+        let d = `${startTime.getDate()}`;
         if (d.length < 2) {
             d = "0" + d;
         }
@@ -43,9 +43,8 @@ module.exports = function (express, config) {
             variables: {}
         }, {
             headers: {
-                "X-Auth-Email": config.cloudflare.email,
-                "X-Auth-Key": config.cloudflare.key,
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + config.cloudflare.key
             }
         }).then(response => {
             let data = [];
@@ -65,6 +64,9 @@ module.exports = function (express, config) {
             res.json(data);
         }).catch(err => {
             console.log(err);
+            if (err.response && err.response.data) {
+                console.log(err.response.data);
+            }
             res.status(500);
         });
     });
