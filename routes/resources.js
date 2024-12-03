@@ -301,12 +301,6 @@ module.exports = function (express, config) {
         proxyUrlDownload(req, res, url);
     }
 
-    const PROXY_REDIRECT_WHITELIST = [
-        'https://www.spigotmc.org/resources/',
-        'https://github.com/',
-        'https://objects.githubusercontent.com/'
-    ]
-
     function proxyUrlDownload(req, res, url, r = 4) {
         console.log("proxying download for " + url)
         https.get(url, {
@@ -314,10 +308,10 @@ module.exports = function (express, config) {
                 'User-Agent': config.userAgent
             }
         }, resp => {
-            if (r > 0 && (resp.statusCode === 301 || resp.statusCode === 302 || resp.statusCode === 307) && PROXY_REDIRECT_WHITELIST.some(w => resp.headers.location.startsWith(w))) {
-                res.set('X-Spiget-Redirect-' + r, resp.headers.location);
+            if (resp.statusCode === 301 || resp.statusCode === 302 || resp.statusCode === 307) {
                 console.log("redirecting to " + resp.headers.location);
-                proxyUrlDownload(req, res, resp.headers.location, r - 1);
+                res.set('Location', resp.headers.location);
+                res.status(307).end();
                 return;
             }
             console.log(resp.statusCode + " " + url);
