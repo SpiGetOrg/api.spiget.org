@@ -292,18 +292,34 @@ module.exports = function (express, config) {
         }
     });
 
-    function proxyDownload(req,res, version) {
+    function proxyDownload(req, res, version) {
         if (config.server.mode !== "master") {
             util.redirectToMaster(req, res, config);
             return;
         }
         const url = "https://www.spigotmc.org/resources/" + version.resource + "/download?version=" + version._id;
+        proxyUrlDownload(req, res, url);
+    }
+
+    const PROXY_REDIRECT_WHITELIST = [
+        'https://www.spigotmc.org/resources/',
+        'https://github.com/',
+        'https://objects.githubusercontent.com/'
+    ]
+
+    function proxyUrlDownload(req, res, url, r = 4) {
         console.log("proxying download for " + url)
         https.get(url, {
             headers: {
                 'User-Agent': config.userAgent
             }
         }, resp => {
+            if (r > 0 && (resp.statusCode === 301 || resp.statusCode === 302 || resp.statusCode === 307) && PROXY_REDIRECT_WHITELIST.some(w => resp.headers.location.startsWith(w))) {
+                res.set('X-Spiget-Redirect-' + r, resp.headers.location);
+                console.log("redirecting to " + resp.headers.location);
+                proxyUrlDownload(req, res, resp.headers.location, r - 1);
+                return;
+            }
             console.log(resp.statusCode + " " + url);
             res.set('Content-disposition', resp.headers['content-disposition']);
             res.set('Content-Type', 'application/octet-stream');
