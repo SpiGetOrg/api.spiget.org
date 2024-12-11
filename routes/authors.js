@@ -23,7 +23,7 @@ module.exports = function (express, config) {
 
     router.get("/recentUpdates", function (req, res) {
         let lastTime = util.timeInSeconds() - 7200;
-        Author.paginate({"$where": "this.fetch.latest > " + lastTime}, util.paginateReq(req, util.authorAllFields), function (err, authors) {
+        Author.paginate({"$expr" : { "$gt" : [  "$fetch.latest",lastTime ] }}, util.paginateReq(req, util.authorAllFields), function (err, authors) {
             if (err) {
                 return console.error(err);
             }

@@ -28,7 +28,7 @@ module.exports = function (express, config) {
     });
 
     router.get("/new", function (req, res) {
-        Resource.paginate({"$where": "this.releaseDate == this.updateDate"}, util.paginateReq(req, util.resourceListFields), function (err, resources) {
+        Resource.paginate({ "$expr" : { "$eq" : [ "$releaseDate", "$updateDate" ] } }, util.paginateReq(req, util.resourceListFields), function (err, resources) {
             if (err) {
                 return console.error(err);
             }
@@ -39,7 +39,7 @@ module.exports = function (express, config) {
 
     router.get("/recentUpdates", function (req, res) {
         let lastTime = util.timeInSeconds() - 7200;
-        Resource.paginate({"$where": "this.updateDate > " + lastTime}, util.paginateReq(req, util.resourceListFields), function (err, resources) {
+        Resource.paginate({"$expr" : { "$gt" : [  "$updateDate",lastTime ] }}, util.paginateReq(req, util.resourceListFields), function (err, resources) {
             if (err) {
                 return console.error(err);
             }
