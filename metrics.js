@@ -4,7 +4,7 @@ const Sentry = require('@sentry/node');
 let config = require("./config");
 
 const metrics = new Metrics(config.metrics);
-const flusher = new IntervalFlusher(metrics, 10000);
+const flusher = new IntervalFlusher(metrics, 1000);
 metrics.setFlusher(flusher);
 
 
