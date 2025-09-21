@@ -62,7 +62,7 @@ app.use("/.well-known", express.static(".well-known"));
 // app.use(swStats.getMiddleware(config.swagger));
 
 // create a rotating write stream
-let accessLogStream = rfs('access.log', {
+let accessLogStream = rfs.createStream('access.log', {
     interval: '1d', // rotate daily
     path: path.join(__dirname, 'log'),
     compress: "gzip"
