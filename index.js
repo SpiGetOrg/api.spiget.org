@@ -11,7 +11,6 @@ let Schema = mongoose.Schema;
 let path = require("path");
 let fs = require("fs");
 let rfs = require("rotating-file-stream");
-let Puller = require("express-git-puller").Puller;
 let metrics = require("./metrics");
 let config = require("./config");
 let util = require("./util")
@@ -58,9 +57,6 @@ app.use(function (req, res, next) {
 
 app.use("/.well-known", express.static(".well-known"));
 
-// var swStats = require('swagger-stats');
-// app.use(swStats.getMiddleware(config.swagger));
-
 // create a rotating write stream
 let accessLogStream = rfs.createStream('access.log', {
     interval: '1d', // rotate daily
@@ -76,57 +72,6 @@ morgan.token('remote-addr', function (req) {
 
 // Pretty-Print JSON
 app.set('json spaces', 2);
-
-let updatingApp = false;
-{// Git Puller
-    console.log("Setting up git puller");
-
-    const updateDelay = Math.ceil(Math.random() * 10000) + Math.ceil(Math.random() * 10000);
-    const puller = new Puller({
-        ...{
-            events: ["push"],
-            branches: ["master"],
-            vars: {
-                appName: "spiget"
-            },
-            commandOrder: ["pre", "git", "install", "post"],
-            commands: {
-                git: [
-                    "git fetch --all",
-                    "git reset --hard origin/master"
-                ],
-                install: [
-                    "npm install"
-                ],
-                post: [
-                    "pm2 restart $appName$"
-                ]
-            },
-            delays: {
-                pre: updateDelay,
-                install: Math.ceil(Math.random() * 200),
-                post: Math.ceil(Math.random() * 1000)
-            }
-        },
-        ...config.puller
-    });
-    puller.on("before", (req, res) => {
-        console.log(`waiting ${ updateDelay }ms before updating`);
-        setTimeout(() => {
-            console.log("updating!")
-            updatingApp = true;
-            console.log(process.cwd());
-        }, updateDelay + 2000);
-    });
-    app.use(function (req, res, next) {
-        if (updatingApp) {
-            res.status(503).send({err: "app is updating"});
-            return;
-        }
-        next();
-    });
-    app.use(config.puller.endpoint, bodyParser.json({limit: '100kb'}), puller.middleware);
-}
 
 // mongoose.plugin(util.idPlugin);
 mongoose.plugin(util.paginatePlugin);

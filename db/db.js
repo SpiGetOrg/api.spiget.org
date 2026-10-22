@@ -1,23 +1,6 @@
 const Sentry = require('@sentry/node');
 
 module.exports = function (mongoose, config) {
-
-    if (config.mongo.useTunnel) {
-        console.log("Establishing SSH Tunnel to " + config.mongo.tunnel.host + "...");
-        require("tunnel-ssh")(config.mongo.tunnel, function (err, server) {
-            if (err) {
-                console.error(err);
-                return;
-            }
-            connectMongo(mongoose, config);
-        })
-    } else {
-        connectMongo(mongoose, config);
-    }
-
-};
-
-function connectMongo(mongoose, config) {
     if (config.mongo.url) {
         console.log("Connecting to mongodb...");
         mongoose.connect(config.mongo.url, {});

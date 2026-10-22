@@ -1,0 +1,10 @@
+node_modules
+.git
+.github
+.idea
+config.js
+log
+.env
+*.md
+Dockerfile
+docker-compose.yml

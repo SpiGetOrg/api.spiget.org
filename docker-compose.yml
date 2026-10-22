@@ -1,0 +1,15 @@
+services:
+  api:
+    build: .
+    image: spiget-api
+    # host networking: reaches MongoDB/InfluxDB on localhost and binds PORT directly on the host (no ports: mapping)
+    network_mode: host
+    init: true
+    # unless-stopped, not on-failure: the app exits with code 0 on uncaught exceptions
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - logs:/app/log
+
+volumes:
+  logs:
