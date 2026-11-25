@@ -153,23 +153,6 @@ module.exports.serverError = function (res, err) {
 // MongoDB rejects a sort with more keys than this
 const MAX_SORT_KEYS = 32;
 
-// MongoDB cannot sort by two different array fields at once ("parallel arrays").
-// Several paths inside the same array are fine.
-function checkArraySort(schema, sort) {
-    if (!sort || typeof sort !== "object") return;
-    let arrayFields = [];
-    Object.keys(sort).forEach(key => {
-        let field = key.split(".")[0];
-        let type = schema.path(field);
-        if (type && type.$isMongooseArray && arrayFields.indexOf(field) === -1) {
-            arrayFields.push(field);
-        }
-    });
-    if (arrayFields.length > 1) {
-        throw badRequest("cannot sort by more than one list field: " + arrayFields.join(", "));
-    }
-}
-
 // Replaces mongoose-paginate 5.0.3, which used Model.count (removed in Mongoose 8).
 // Keeps its result shape because paginateRes and the API headers depend on it.
 module.exports.paginatePlugin = function (schema) {
@@ -179,7 +162,6 @@ module.exports.paginatePlugin = function (schema) {
         options = Object.assign({}, defaults, options);
 
         const {select, sort} = options;
-        checkArraySort(this.schema, sort);
         const lean = options.lean || false;
         const limit = options.hasOwnProperty("limit") ? options.limit : 10;
         let skip, offset, page;
@@ -250,6 +232,8 @@ module.exports.paginateReq = function (req, defaultFields, other) {
         }
         sort = sort.trim();
         if (sort.length <= 0) continue;
+        // Mongoose drops these names from a sort, so they never reach MongoDB and must not count below
+        if (sort === "constructor" || sort === "prototype" || sort === "__proto__") continue;
 
         if (sort === "id") sort = "_id";
         if (!isSortField(sort)) {
