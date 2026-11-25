@@ -4,6 +4,16 @@ const crypto = require("crypto");
 
 const VALID_EVENTS = ["new-resource", "resource-update", "new-author"];
 
+function isHttpUrl(url) {
+    if (typeof url !== "string") return false;
+    try {
+        let protocol = new URL(url).protocol;
+        return protocol === "http:" || protocol === "https:";
+    } catch (e) {
+        return false;
+    }
+}
+
 module.exports = function (express, config) {
     let router = express.Router();
 
@@ -18,20 +28,30 @@ module.exports = function (express, config) {
             util.redirectToMaster(req, res, config);
             return;
         }
-        let url = req.body.url;
-        let events = req.body.events;
-        let salt = req.body.events || crypto.createHash("sha256").update(url + Date.now()).digest("hex");
+        let body = req.body || {};
+        let url = body.url;
+        let events = body.events;
 
-        if (!url || url.length === 0 || !url.startsWith("http")) {
+        if (!isHttpUrl(url)) {
             res.status(400).json({error: "Missing/Invalid URL"});
             return;
         }
+        let salt = body.events || crypto.createHash("sha256").update(url + Date.now()).digest("hex");
         if (!events || events.length === 0) {
             res.status(400).json({error: "Missing events"});
             return;
         }
         if (typeof events === "string") {
-            events = JSON.parse(events);
+            try {
+                events = JSON.parse(events);
+            } catch (e) {
+                res.status(400).json({error: "Invalid events"});
+                return;
+            }
+        }
+        if (!Array.isArray(events)) {
+            res.status(400).json({error: "Invalid events"});
+            return;
         }
         if(events.length === 0) {
             res.status(400).json({error: "Missing events"});
@@ -45,7 +65,7 @@ module.exports = function (express, config) {
         }
 
         util.asCallback(Webhook.findOne({url: url, events: events}).exec(), function (err, duplicate) {
-            if (err) return console.log(err);
+            if (err) return util.serverError(res, err);
             if (duplicate) {
                 res.status(400).json({error: "Duplicate Webhook"});
                 return;
@@ -64,7 +84,7 @@ module.exports = function (express, config) {
                 failStatus: 0
             });
             util.asCallback(webhook.save(), function (err, saved) {
-                if (err) return console.log(err);
+                if (err) return util.serverError(res, err);
                 res.json({
                     id: saved.id,
                     url: saved.url,
@@ -77,7 +97,7 @@ module.exports = function (express, config) {
 
     router.get("/status/:id", function (req, res) {
         util.asCallback(Webhook.findOne({_id: req.params.id}, "_id failStatus failedConnections").exec(), function (err, webhook) {
-            if (err) return console.log(err);
+            if (err) return util.serverError(res, err);
             if (!webhook) {
                 res.status(404).json({error: "Webhook not found"});
                 return;
@@ -97,7 +117,7 @@ module.exports = function (express, config) {
         }
 
         util.asCallback(Webhook.findOne({_id: req.params.id}).exec(), function (err, webhook) {
-            if (err) return console.log(err);
+            if (err) return util.serverError(res, err);
             if (!webhook) {
                 res.status(404).json({error: "Webhook not found"});
                 return;
@@ -108,7 +128,7 @@ module.exports = function (express, config) {
             }
 
             util.asCallback(Webhook.deleteOne({_id: req.params.id, secret: req.params.secret}).exec(), function (err, removed) {
-                if (err) return console.log(err);
+                if (err) return util.serverError(res, err);
                 res.json({success: true});
             })
         })

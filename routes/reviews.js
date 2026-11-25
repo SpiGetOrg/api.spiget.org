@@ -9,7 +9,7 @@ module.exports = function (express, config) {
     router.get("/", function (req, res) {
         Review.paginate({}, util.paginateReq(req, util.reviewAllFields), function (err, reviews) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             reviews = util.paginateRes(reviews, res);
             res.json(util.forceArray(util.fixId(reviews)));
@@ -19,7 +19,7 @@ module.exports = function (express, config) {
     router.get("/trends", function (req, res) {
         util.asCallback(Review.find({}, "rating").read("secondaryPreferred").lean().exec(), function (err, reviews) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             let data = {
                 "total": reviews.length,
@@ -41,7 +41,7 @@ module.exports = function (express, config) {
     router.get("/:review(\\d+)", function (req, res) {
         util.asCallback(Review.findOne({_id: req.params.review}).select(util.selectFields(req, util.reviewAllFields)).read("secondaryPreferred").lean().exec(), function (err, review) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             if (!review) {
                 res.status(404).json({error: "review not found"})

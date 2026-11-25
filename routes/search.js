@@ -18,12 +18,18 @@ module.exports = function (express, config) {
             return;
         }
 
+        // MongoDB rejects null bytes in a regex
+        if (req.params.query.indexOf("\0") !== -1) {
+            res.status(400).json({error: "invalid query"})
+            return;
+        }
+
         let query = {};
         query[field] = {"$regex": new RegExp(escapeRegex(req.params.query)), "$options": "i"};
 
         Resource.paginate(query, util.paginateReq(req, util.resourceListFields), function (err, resources) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             resources = util.paginateRes(resources, res);
             res.json(util.forceArray(util.fixId(resources)));
@@ -40,12 +46,18 @@ module.exports = function (express, config) {
             return;
         }
 
+        // MongoDB rejects null bytes in a regex
+        if (req.params.query.indexOf("\0") !== -1) {
+            res.status(400).json({error: "invalid query"})
+            return;
+        }
+
         let query = {};
         query[field] = {"$regex": new RegExp(escapeRegex(req.params.query)), "$options": "i"};
 
         Author.paginate(query, util.paginateReq(req, util.authorAllFields), function (err, authors) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             authors = util.paginateRes(authors, res);
             res.json(util.forceArray(util.fixId(authors)));

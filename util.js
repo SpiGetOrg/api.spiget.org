@@ -130,6 +130,46 @@ module.exports.fixId = function (docs) {
     return docs;
 };
 
+// Error for invalid user input. The error handler in index.js answers it with a 400.
+// Only throw it before the first database call: an error thrown inside a query callback is uncaught and stops the process.
+function badRequest(message) {
+    let err = new Error(message);
+    err.status = 400;
+    return err;
+}
+
+module.exports.badRequest = badRequest;
+
+// Answers a request whose database query failed, so that the client does not wait for a response that never comes
+module.exports.serverError = function (res, err) {
+    console.error(err);
+    if (res.headersSent) return;
+    res.status(500).json({
+        error: "Unexpected Exception",
+        msg: "Unexpected Exception. Please report this to https://github.com/SpiGetOrg/api.spiget.org/issues"
+    });
+};
+
+// MongoDB rejects a sort with more keys than this
+const MAX_SORT_KEYS = 32;
+
+// MongoDB cannot sort by two different array fields at once ("parallel arrays").
+// Several paths inside the same array are fine.
+function checkArraySort(schema, sort) {
+    if (!sort || typeof sort !== "object") return;
+    let arrayFields = [];
+    Object.keys(sort).forEach(key => {
+        let field = key.split(".")[0];
+        let type = schema.path(field);
+        if (type && type.$isMongooseArray && arrayFields.indexOf(field) === -1) {
+            arrayFields.push(field);
+        }
+    });
+    if (arrayFields.length > 1) {
+        throw badRequest("cannot sort by more than one list field: " + arrayFields.join(", "));
+    }
+}
+
 // Replaces mongoose-paginate 5.0.3, which used Model.count (removed in Mongoose 8).
 // Keeps its result shape because paginateRes and the API headers depend on it.
 module.exports.paginatePlugin = function (schema) {
@@ -139,6 +179,7 @@ module.exports.paginatePlugin = function (schema) {
         options = Object.assign({}, defaults, options);
 
         const {select, sort} = options;
+        checkArraySort(this.schema, sort);
         const lean = options.lean || false;
         const limit = options.hasOwnProperty("limit") ? options.limit : 10;
         let skip, offset, page;
@@ -191,6 +232,9 @@ module.exports.paginateReq = function (req, defaultFields, other) {
     let fieldStr = selectFields(req, defaultFields);
 
     let sortParam = req.query.sort || "id";
+    if (typeof sortParam !== "string") {
+        throw badRequest("invalid sort");
+    }
     let sortSplit = sortParam.split(",");
     let sortObj = {};
     for (let i = 0; i < sortSplit.length; i++) {
@@ -208,20 +252,47 @@ module.exports.paginateReq = function (req, defaultFields, other) {
         if (sort.length <= 0) continue;
 
         if (sort === "id") sort = "_id";
+        if (!isSortField(sort)) {
+            throw badRequest("invalid sort field: " + sort.substr(0, 64));
+        }
         sortObj[sort] = sortMode;
+    }
+    if (Object.keys(sortObj).length > MAX_SORT_KEYS) {
+        throw badRequest("too many sort fields, max " + MAX_SORT_KEYS);
+    }
+    // MongoDB accepts $natural only when it is the single sort key
+    if ("$natural" in sortObj && Object.keys(sortObj).length > 1) {
+        throw badRequest("cannot combine $natural with other sort fields");
+    }
+
+    let page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.size) || 10;
+    // paginate skips (page - 1) * limit documents, and MongoDB rejects a negative skip
+    if ((page - 1) * limit < 0) {
+        throw badRequest(page < 1 ? "invalid page" : "invalid size");
     }
 
     return Object.assign({}, {
-        page: parseInt(req.query.page) || 1,
-        limit: parseInt(req.query.size) || 10,
+        page: page,
+        limit: limit,
         sort: sortObj,
         select: fieldStr
     }, other);
 };
 
+// A sort field is a dot-separated path. MongoDB rejects empty path parts, parts that start with "$" and null bytes.
+function isSortField(field) {
+    if (field === "$natural") return true;
+    if (field.indexOf("\0") !== -1) return false;
+    return field.split(".").every(part => part.length > 0 && part.charAt(0) !== "$");
+}
+
 
 function selectFields(req, defaultFields) {
     let fieldParam = req.query.fields || (defaultFields || ["id"]).join(",");
+    if (typeof fieldParam !== "string") {
+        throw badRequest("invalid fields");
+    }
     let fieldSplit = fieldParam.split(",");
     let allowedFields = [];
     for (let i = 0; i < fieldSplit.length; i++) {

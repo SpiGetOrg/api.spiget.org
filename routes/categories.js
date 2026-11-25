@@ -11,7 +11,7 @@ module.exports = function (express, config) {
     router.get("/", function (req, res) {
         Category.paginate({}, util.paginateReq(req, util.categoryAllFields), function (err, categories) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             categories = util.paginateRes(categories, res);
             res.json(util.forceArray(util.fixId(categories)));
@@ -21,7 +21,7 @@ module.exports = function (express, config) {
     router.get("/:category(\\d+)", function (req, res) {
         util.asCallback(Category.findOne({_id: req.params.category}).select(util.categoryAllFields).read("secondaryPreferred").lean().exec(), function (err, category) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             if (!category) {
                 res.status(404).json({error: "category not found"})
@@ -34,7 +34,7 @@ module.exports = function (express, config) {
     router.get("/:category(\\d+)/go", function (req, res) {
         util.asCallback(Category.findOne({_id: req.params.category}).read("secondaryPreferred").lean().exec(), function (err, category) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             console.log(category)
             if (!category) {
@@ -48,7 +48,7 @@ module.exports = function (express, config) {
     router.get("/:category(\\d+)/resources", function (req, res) {
         Resource.paginate({"category.id": req.params.category}, util.paginateReq(req, util.resourceListFields), function (err, resources) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             resources = util.paginateRes(resources, res);
             res.json(util.forceArray(util.fixId(resources)));

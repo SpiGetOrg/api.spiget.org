@@ -101,6 +101,12 @@ app.use("/v2/webhook", require("./routes/webhook")(express, config));
 app.use(Sentry.Handlers.errorHandler());
 
 app.use(function (err, req, res, next) {
+    // invalid input: util.badRequest, a body that fails to parse, a malformed URL
+    let status = err.status || err.statusCode;
+    if (status >= 400 && status < 500) {
+        res.status(status).json({error: err.message});
+        return;
+    }
     console.error(err);
     res.status(500).json({
         error: "Unexpected Exception",
