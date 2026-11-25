@@ -9,8 +9,6 @@ module.exports = function (mongoose, config) {
         mongoose.connect("mongodb://" + ((config.mongo.user || "admin") + ":" + (config.mongo.pass || "admin") + "@" + (config.mongo.address || "localhost") + ":" + (config.mongo.port || 27017) + "/" + (config.mongo.database || "database")));
     }
 
-    mongoose.Promise = Promise;
-
     mongoose.connection.on("error", err => {
         Sentry.captureException(err);
         console.warn(err);

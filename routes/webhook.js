@@ -44,7 +44,7 @@ module.exports = function (express, config) {
             }
         }
 
-        Webhook.findOne({url: url, events: events}, function (err, duplicate) {
+        util.asCallback(Webhook.findOne({url: url, events: events}).exec(), function (err, duplicate) {
             if (err) return console.log(err);
             if (duplicate) {
                 res.status(400).json({error: "Duplicate Webhook"});
@@ -63,7 +63,7 @@ module.exports = function (express, config) {
                 failedConnections: 0,
                 failStatus: 0
             });
-            webhook.save(function (err, saved) {
+            util.asCallback(webhook.save(), function (err, saved) {
                 if (err) return console.log(err);
                 res.json({
                     id: saved.id,
@@ -76,7 +76,7 @@ module.exports = function (express, config) {
     });
 
     router.get("/status/:id", function (req, res) {
-        Webhook.findOne({_id: req.params.id}, "_id failStatus failedConnections", function (err, webhook) {
+        util.asCallback(Webhook.findOne({_id: req.params.id}, "_id failStatus failedConnections").exec(), function (err, webhook) {
             if (err) return console.log(err);
             if (!webhook) {
                 res.status(404).json({error: "Webhook not found"});
@@ -96,7 +96,7 @@ module.exports = function (express, config) {
             return;
         }
 
-        Webhook.findOne({_id: req.params.id}, function (err, webhook) {
+        util.asCallback(Webhook.findOne({_id: req.params.id}).exec(), function (err, webhook) {
             if (err) return console.log(err);
             if (!webhook) {
                 res.status(404).json({error: "Webhook not found"});
@@ -107,7 +107,7 @@ module.exports = function (express, config) {
                 return;
             }
 
-            Webhook.deleteOne({_id: req.params.id, secret: req.params.secret}, function (err, removed) {
+            util.asCallback(Webhook.deleteOne({_id: req.params.id, secret: req.params.secret}).exec(), function (err, removed) {
                 if (err) return console.log(err);
                 res.json({success: true});
             })

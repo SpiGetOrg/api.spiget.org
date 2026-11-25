@@ -95,7 +95,7 @@ module.exports = function (express, config) {
 
 
     router.get("/:resource(\\d+)", function (req, res) {
-        Resource.findOne({_id: req.params.resource}).select(util.selectFields(req, util.resourceAllFields)).read("secondaryPreferred").lean().exec(function (err, resource) {
+        util.asCallback(Resource.findOne({_id: req.params.resource}).select(util.selectFields(req, util.resourceAllFields)).read("secondaryPreferred").lean().exec(), function (err, resource) {
             if (err) {
                 return console.error(err);
             }
@@ -113,7 +113,7 @@ module.exports = function (express, config) {
     });
 
     router.get("/:resource(\\d+)/go", function (req, res) {
-        Resource.findOne({_id: req.params.resource}).select("_id").read("secondaryPreferred").lean().exec(function (err, resource) {
+        util.asCallback(Resource.findOne({_id: req.params.resource}).select("_id").read("secondaryPreferred").lean().exec(), function (err, resource) {
             if (err) {
                 return console.error(err);
             }
@@ -129,7 +129,7 @@ module.exports = function (express, config) {
     // Author
 
     router.get("/:resource(\\d+)/author", function (req, res) {
-        Resource.findOne({_id: req.params.resource}, "_id author").read("secondaryPreferred").lean().exec(function (err, resource) {
+        util.asCallback(Resource.findOne({_id: req.params.resource}, "_id author").read("secondaryPreferred").lean().exec(), function (err, resource) {
             if (err) {
                 return console.error(err);
             }
@@ -137,7 +137,7 @@ module.exports = function (express, config) {
                 res.status(404).json({error: "resource not found"})
                 return;
             }
-            Author.findOne({_id: resource.author.id}).select(util.selectFields(req, util.authorAllFields)).read("secondaryPreferred").lean().exec(function (err, author) {
+            util.asCallback(Author.findOne({_id: resource.author.id}).select(util.selectFields(req, util.authorAllFields)).read("secondaryPreferred").lean().exec(), function (err, author) {
                 if (err) {
                     return console.error(err);
                 }
@@ -154,7 +154,7 @@ module.exports = function (express, config) {
     // Icon
 
     router.get("/:resource(\\d+)/icon/:type?", function (req, res) {
-        Resource.findOne({_id: req.params.resource}, "_id icon").read("secondaryPreferred").lean().exec(function (err, resource) {
+        util.asCallback(Resource.findOne({_id: req.params.resource}, "_id icon").read("secondaryPreferred").lean().exec(), function (err, resource) {
             if (err) {
                 return console.error(err);
             }
@@ -169,7 +169,7 @@ module.exports = function (express, config) {
     // Download
 
     router.get("/:resource(\\d+)/download", function (req, res) {
-        Resource.findOne({_id: req.params.resource}, "_id name file external").read("secondaryPreferred").lean().exec(function (err, resource) {
+        util.asCallback(Resource.findOne({_id: req.params.resource}, "_id name file external").read("secondaryPreferred").lean().exec(), function (err, resource) {
             if (err) {
                 return console.error(err);
             }
@@ -220,7 +220,7 @@ module.exports = function (express, config) {
 
     router.get("/:resource(\\d+)/updates/:update(\\d+|latest)", function (req, res) {
         if ("latest" === req.params.update) {
-            ResourceUpdate.findOne({"resource": req.params.resource}).sort({"date": -1}).select(util.updateAllFields).read("secondaryPreferred").lean().exec(function (err, update) {
+            util.asCallback(ResourceUpdate.findOne({"resource": req.params.resource}).sort({"date": -1}).select(util.updateAllFields).read("secondaryPreferred").lean().exec(), function (err, update) {
                 if (err) {
                     return console.error(err);
                 }
@@ -231,7 +231,7 @@ module.exports = function (express, config) {
                 res.json(util.fixId(update));
             });
         } else {
-            ResourceUpdate.findOne({"_id": req.params.update}).select(util.updateAllFields).read("secondaryPreferred").lean().exec(function (err, update) {
+            util.asCallback(ResourceUpdate.findOne({"_id": req.params.update}).select(util.updateAllFields).read("secondaryPreferred").lean().exec(), function (err, update) {
                 if (err) {
                     return console.error(err);
                 }
@@ -268,7 +268,7 @@ module.exports = function (express, config) {
 
     router.get("/:resource(\\d+)/versions/:version(\\d+|latest)", function (req, res) {
         if ("latest" === req.params.version) {
-            ResourceVersion.findOne({"resource": req.params.resource}).sort({"releaseDate": -1}).select(util.versionAllFields).read("secondaryPreferred").lean().exec(function (err, version) {
+            util.asCallback(ResourceVersion.findOne({"resource": req.params.resource}).sort({"releaseDate": -1}).select(util.versionAllFields).read("secondaryPreferred").lean().exec(), function (err, version) {
                 if (err) {
                     return console.error(err);
                 }
@@ -279,7 +279,7 @@ module.exports = function (express, config) {
                 res.json(util.fixId(version));
             });
         } else {
-            ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version)).select(util.versionAllFields).read("secondaryPreferred").lean().exec(function (err, version) {
+            util.asCallback(ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version)).select(util.versionAllFields).read("secondaryPreferred").lean().exec(), function (err, version) {
                 if (err) {
                     return console.error(err);
                 }
@@ -325,7 +325,7 @@ module.exports = function (express, config) {
     router.get("/:resource(\\d+)/versions/:version(\\d+|latest)/download", function (req, res) {
         //TODO externalUrl download
         if ("latest" === req.params.version) {
-            ResourceVersion.findOne({"resource": req.params.resource}, "_id resource").sort({"releaseDate": -1}).read("secondaryPreferred").lean().exec(function (err, version) {
+            util.asCallback(ResourceVersion.findOne({"resource": req.params.resource}, "_id resource").sort({"releaseDate": -1}).read("secondaryPreferred").lean().exec(), function (err, version) {
                 if (err) {
                     return console.error(err);
                 }
@@ -336,7 +336,7 @@ module.exports = function (express, config) {
                 res.redirect("https://spigotmc.org/resources/" + version.resource + "/download?version=" + version._id);
             });
         } else {
-            ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version), "_id resource").read("secondaryPreferred").lean().exec(function (err, version) {
+            util.asCallback(ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version), "_id resource").read("secondaryPreferred").lean().exec(), function (err, version) {
                 if (err) {
                     return console.error(err);
                 }
@@ -351,7 +351,7 @@ module.exports = function (express, config) {
 
     router.get("/:resource(\\d+)/versions/:version(\\d+|latest)/download/proxy", function (req, res) {
         if ("latest" === req.params.version) {
-            ResourceVersion.findOne({"resource": req.params.resource}, "_id resource uuid").sort({"releaseDate": -1}).read("secondaryPreferred").lean().exec(function (err, version) {
+            util.asCallback(ResourceVersion.findOne({"resource": req.params.resource}, "_id resource uuid").sort({"releaseDate": -1}).read("secondaryPreferred").lean().exec(), function (err, version) {
                 if (err) {
                     return console.error(err);
                 }
@@ -362,7 +362,7 @@ module.exports = function (express, config) {
                 proxyDownload(req, res, version);
             });
         } else {
-            ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version), "_id resource uuid").read("secondaryPreferred").lean().exec(function (err, version) {
+            util.asCallback(ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version), "_id resource uuid").read("secondaryPreferred").lean().exec(), function (err, version) {
                 if (err) {
                     return console.error(err);
                 }
@@ -385,7 +385,7 @@ module.exports = function (express, config) {
             return;
         }
 
-        UpdateRequest.findOne({requestedId: req.params.resource}, function (err, duplicate) {
+        util.asCallback(UpdateRequest.findOne({requestedId: req.params.resource}).exec(), function (err, duplicate) {
             if (err) return console.log(err);
             if (duplicate) {
                 res.status(400).json({error: "Duplicate Update Request"});
@@ -401,7 +401,7 @@ module.exports = function (express, config) {
                 reviews: req.body.updates !== false,
                 delete: req.body.delete !== false
             });
-            request.save(function (err, saved) {
+            util.asCallback(request.save(), function (err, saved) {
                 if (err) return console.log(err);
                 res.json({
                     msg: "Resource update requested",

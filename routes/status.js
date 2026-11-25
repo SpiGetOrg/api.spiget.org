@@ -1,3 +1,4 @@
+const util = require("../util");
 const Status = require("../db/schemas/status").model;
 const Resource = require("../db/schemas/resource").model;
 const Author = require("../db/schemas/author").model;
@@ -10,7 +11,7 @@ module.exports = function (express, config) {
     let router = express.Router();
 
     router.get("/", function (req, res) {
-        Status.find({}).read("secondaryPreferred").lean().exec(function (err, statusData) {
+        util.asCallback(Status.find({}).read("secondaryPreferred").lean().exec(), function (err, statusData) {
             if (err) {
                 return console.error(err);
             }
