@@ -130,15 +130,61 @@ module.exports.fixId = function (docs) {
     return docs;
 };
 
-module.exports.paginatePlugin = function () {
-    let p = require("mongoose-paginate");
-    p.paginate.options = {
-        lean: true,
-        leanWithId: false,
-        sort: "_id"
+// Replaces mongoose-paginate 5.0.3, which used Model.count (removed in Mongoose 8).
+// Keeps its result shape because paginateRes and the API headers depend on it.
+module.exports.paginatePlugin = function (schema) {
+    const defaults = {lean: true, leanWithId: false, sort: "_id"};
+    schema.statics.paginate = function (query, options, callback) {
+        query = query || {};
+        options = Object.assign({}, defaults, options);
+
+        const {select, sort} = options;
+        const lean = options.lean || false;
+        const limit = options.hasOwnProperty("limit") ? options.limit : 10;
+        let skip, offset, page;
+        if (options.hasOwnProperty("offset")) {
+            offset = options.offset;
+            skip = offset;
+        } else if (options.hasOwnProperty("page")) {
+            page = options.page;
+            skip = (page - 1) * limit;
+        } else {
+            offset = 0;
+            page = 1;
+            skip = offset;
+        }
+
+        const count = Object.keys(query).length === 0
+            ? this.estimatedDocumentCount().exec()
+            : this.countDocuments(query).exec();
+        let docs = [];
+        if (limit) {
+            docs = this.find(query).select(select).sort(sort).skip(skip).limit(limit).lean(lean).exec();
+        }
+
+        const promise = Promise.all([docs, count]).then(function ([docs, total]) {
+            const result = {docs, total, limit};
+            if (offset !== undefined) {
+                result.offset = offset;
+            }
+            if (page !== undefined) {
+                result.page = page;
+                result.pages = Math.ceil(total / limit) || 1;
+            }
+            return result;
+        });
+        if (typeof callback === "function") {
+            module.exports.asCallback(promise, callback);
+        }
+        return promise;
     };
-    return p;
-}();
+};
+
+// Feeds a promise into a Node-style callback. The route handlers were written against
+// Mongoose's callback API, which Mongoose 7 removed.
+module.exports.asCallback = function (promise, callback) {
+    promise.then(result => callback(null, result), err => callback(err));
+};
 
 module.exports.paginateReq = function (req, defaultFields, other) {
 

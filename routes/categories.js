@@ -19,7 +19,7 @@ module.exports = function (express, config) {
     });
 
     router.get("/:category(\\d+)", function (req, res) {
-        Category.findOne({_id: req.params.category}).select(util.categoryAllFields).read("secondaryPreferred").lean().exec(function (err, category) {
+        util.asCallback(Category.findOne({_id: req.params.category}).select(util.categoryAllFields).read("secondaryPreferred").lean().exec(), function (err, category) {
             if (err) {
                 return console.error(err);
             }
@@ -32,7 +32,7 @@ module.exports = function (express, config) {
     });
 
     router.get("/:category(\\d+)/go", function (req, res) {
-        Category.findOne({_id: req.params.category}).read("secondaryPreferred").lean().exec(function (err, category) {
+        util.asCallback(Category.findOne({_id: req.params.category}).read("secondaryPreferred").lean().exec(), function (err, category) {
             if (err) {
                 return console.error(err);
             }
