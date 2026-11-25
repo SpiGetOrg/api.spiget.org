@@ -14,7 +14,7 @@ module.exports = function (express, config) {
     router.get("/",function (req,res) {
         Author.paginate({}, util.paginateReq(req, util.authorAllFields), function (err, authors) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             authors = util.paginateRes(authors, res);
             res.json(util.forceArray(util.fixId(authors)));
@@ -25,7 +25,7 @@ module.exports = function (express, config) {
         let lastTime = util.timeInSeconds() - 7200;
         Author.paginate({"$expr" : { "$gt" : [  "$fetch.latest",lastTime ] }}, util.paginateReq(req, util.authorAllFields), function (err, authors) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             authors = util.paginateRes(authors, res);
             res.json(util.forceArray(util.fixId(authors)));
@@ -39,7 +39,7 @@ module.exports = function (express, config) {
     router.get("/:author(\\d+)", function (req, res) {
         util.asCallback(Author.findOne({_id: req.params.author}).select(util.selectFields(req,util.authorAllFields)).read("secondaryPreferred").lean().read("secondaryPreferred").exec(), function (err, author) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             if (!author) {
                 res.status(404).json({error: "author not found"})
@@ -52,7 +52,7 @@ module.exports = function (express, config) {
     router.get("/:author(\\d+)/go", function (req, res) {
         util.asCallback(Author.findOne({_id: req.params.author}).select("_id").read("secondaryPreferred").lean().exec(), function (err, author) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             if (!author) {
                 res.status(404).json({error: "author not found"})
@@ -68,7 +68,7 @@ module.exports = function (express, config) {
     router.get("/:author(\\d+)/avatar/:type?", function (req, res) {
         util.asCallback(Author.findOne({_id: req.params.author}, "_id icon").read("secondaryPreferred").lean().exec(), function (err, author) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             if (!author) {
                 res.status(404).json({error: "author not found"})
@@ -85,7 +85,7 @@ module.exports = function (express, config) {
     router.get("/:author(\\d+)/reviews", function (req, res) {
         ResourceReview.paginate({"author.id": req.params.author}, util.paginateReq(req, util.reviewAllFields), function (err, reviews) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             reviews = util.paginateRes(reviews, res);
             res.json(util.forceArray(util.fixId(reviews)));
@@ -96,7 +96,7 @@ module.exports = function (express, config) {
     router.get("/:author(\\d+)/resources", function (req, res) {
         Resource.paginate({"author.id": req.params.author}, util.paginateReq(req, util.resourceListFields), function (err, resources) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             resources = util.paginateRes(resources, res);
             res.json(util.forceArray(util.fixId(resources)));

@@ -13,7 +13,7 @@ module.exports = function (express, config) {
     router.get("/", function (req, res) {
         util.asCallback(Status.find({}).read("secondaryPreferred").lean().exec(), function (err, statusData) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             let status = {};
             for (let i = 0; i < statusData.length; i++) {
@@ -85,6 +85,8 @@ module.exports = function (express, config) {
                         reviews: counts[5]
                     }
                 })
+            }).catch(err => {
+                util.serverError(res, err);
             })
         });
     })

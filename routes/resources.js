@@ -20,7 +20,7 @@ module.exports = function (express, config) {
     router.get("/", function (req, res) {
         Resource.paginate({}, util.paginateReq(req, util.resourceListFields), function (err, resources) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             resources = util.paginateRes(resources, res);
             res.json(util.forceArray(util.fixId(resources)));
@@ -30,7 +30,7 @@ module.exports = function (express, config) {
     router.get("/new", function (req, res) {
         Resource.paginate({ "$expr" : { "$eq" : [ "$releaseDate", "$updateDate" ] } }, util.paginateReq(req, util.resourceListFields), function (err, resources) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             resources = util.paginateRes(resources, res);
             res.json(util.forceArray(util.fixId(resources)));
@@ -41,7 +41,7 @@ module.exports = function (express, config) {
         let lastTime = util.timeInSeconds() - 7200;
         Resource.paginate({"$expr" : { "$gt" : [  "$updateDate",lastTime ] }}, util.paginateReq(req, util.resourceListFields), function (err, resources) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             resources = util.paginateRes(resources, res);
             res.json(util.forceArray(util.fixId(resources)));
@@ -50,6 +50,9 @@ module.exports = function (express, config) {
 
     router.get("/premium", function (req, res) {
         Resource.paginate({"premium": true}, util.paginateReq(req, util.resourceListFields), function (err, resources) {
+            if (err) {
+                return util.serverError(res, err);
+            }
             resources = util.paginateRes(resources, res);
             res.json(util.forceArray(util.fixId(resources)));
         });
@@ -58,7 +61,7 @@ module.exports = function (express, config) {
     router.get("/free", function (req, res) {
         Resource.paginate({"premium": false}, util.paginateReq(req, util.resourceListFields), function (err, resources) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             resources = util.paginateRes(resources, res);
             res.json(util.forceArray(util.fixId(resources)));
@@ -72,7 +75,7 @@ module.exports = function (express, config) {
 
         let done = function (err, resources) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             resources = util.paginateRes(resources, res);
             res.json({
@@ -97,7 +100,7 @@ module.exports = function (express, config) {
     router.get("/:resource(\\d+)", function (req, res) {
         util.asCallback(Resource.findOne({_id: req.params.resource}).select(util.selectFields(req, util.resourceAllFields)).read("secondaryPreferred").lean().exec(), function (err, resource) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             if (!resource) {
                 res.status(404).json({error: "resource not found"})
@@ -115,7 +118,7 @@ module.exports = function (express, config) {
     router.get("/:resource(\\d+)/go", function (req, res) {
         util.asCallback(Resource.findOne({_id: req.params.resource}).select("_id").read("secondaryPreferred").lean().exec(), function (err, resource) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             if (!resource) {
                 res.status(404).json({error: "resource not found"})
@@ -129,17 +132,19 @@ module.exports = function (express, config) {
     // Author
 
     router.get("/:resource(\\d+)/author", function (req, res) {
+        // Validate the fields before the first query. An error thrown inside a query callback stops the process.
+        let authorFields = util.selectFields(req, util.authorAllFields);
         util.asCallback(Resource.findOne({_id: req.params.resource}, "_id author").read("secondaryPreferred").lean().exec(), function (err, resource) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             if (!resource) {
                 res.status(404).json({error: "resource not found"})
                 return;
             }
-            util.asCallback(Author.findOne({_id: resource.author.id}).select(util.selectFields(req, util.authorAllFields)).read("secondaryPreferred").lean().exec(), function (err, author) {
+            util.asCallback(Author.findOne({_id: resource.author.id}).select(authorFields).read("secondaryPreferred").lean().exec(), function (err, author) {
                 if (err) {
-                    return console.error(err);
+                    return util.serverError(res, err);
                 }
                 if (!author) {
                     res.status(404).json({error: "author not found"})
@@ -156,7 +161,7 @@ module.exports = function (express, config) {
     router.get("/:resource(\\d+)/icon/:type?", function (req, res) {
         util.asCallback(Resource.findOne({_id: req.params.resource}, "_id icon").read("secondaryPreferred").lean().exec(), function (err, resource) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             if (!resource) {
                 res.status(404).json({error: "resource not found"})
@@ -171,7 +176,7 @@ module.exports = function (express, config) {
     router.get("/:resource(\\d+)/download", function (req, res) {
         util.asCallback(Resource.findOne({_id: req.params.resource}, "_id name file external").read("secondaryPreferred").lean().exec(), function (err, resource) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             if (!resource) {
                 res.status(404).json({error: "resource not found"})
@@ -199,7 +204,7 @@ module.exports = function (express, config) {
     router.get("/:resource(\\d+)/reviews", function (req, res) {
         ResourceReview.paginate({"resource": req.params.resource}, util.paginateReq(req, util.reviewAllFields), function (err, reviews) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             reviews = util.paginateRes(reviews, res);
             res.json(util.forceArray(util.fixId(reviews)));
@@ -211,7 +216,7 @@ module.exports = function (express, config) {
     router.get("/:resource(\\d+)/updates", function (req, res) {
         ResourceUpdate.paginate({"resource": req.params.resource}, util.paginateReq(req, util.updateAllFields), function (err, updates) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             updates = util.paginateRes(updates, res);
             res.json(util.forceArray(util.fixId(updates)));
@@ -222,7 +227,7 @@ module.exports = function (express, config) {
         if ("latest" === req.params.update) {
             util.asCallback(ResourceUpdate.findOne({"resource": req.params.resource}).sort({"date": -1}).select(util.updateAllFields).read("secondaryPreferred").lean().exec(), function (err, update) {
                 if (err) {
-                    return console.error(err);
+                    return util.serverError(res, err);
                 }
                 if (!update) {
                     res.status(404).json({error: "update not found"})
@@ -233,7 +238,7 @@ module.exports = function (express, config) {
         } else {
             util.asCallback(ResourceUpdate.findOne({"_id": req.params.update}).select(util.updateAllFields).read("secondaryPreferred").lean().exec(), function (err, update) {
                 if (err) {
-                    return console.error(err);
+                    return util.serverError(res, err);
                 }
                 if (!update) {
                     res.status(404).json({error: "update not found"})
@@ -249,7 +254,7 @@ module.exports = function (express, config) {
     router.get("/:resource(\\d+)/versions", function (req, res) {
         ResourceVersion.paginate({"resource": req.params.resource}, util.paginateReq(req, util.versionAllFields), function (err, versions) {
             if (err) {
-                return console.error(err);
+                return util.serverError(res, err);
             }
             versions = util.paginateRes(versions, res);
             res.json(util.forceArray(util.fixId(versions)));
@@ -270,7 +275,7 @@ module.exports = function (express, config) {
         if ("latest" === req.params.version) {
             util.asCallback(ResourceVersion.findOne({"resource": req.params.resource}).sort({"releaseDate": -1}).select(util.versionAllFields).read("secondaryPreferred").lean().exec(), function (err, version) {
                 if (err) {
-                    return console.error(err);
+                    return util.serverError(res, err);
                 }
                 if (!version) {
                     res.status(404).json({error: "version not found"})
@@ -281,7 +286,7 @@ module.exports = function (express, config) {
         } else {
             util.asCallback(ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version)).select(util.versionAllFields).read("secondaryPreferred").lean().exec(), function (err, version) {
                 if (err) {
-                    return console.error(err);
+                    return util.serverError(res, err);
                 }
                 if (!version) {
                     res.status(404).json({error: "version not found"})
@@ -327,7 +332,7 @@ module.exports = function (express, config) {
         if ("latest" === req.params.version) {
             util.asCallback(ResourceVersion.findOne({"resource": req.params.resource}, "_id resource").sort({"releaseDate": -1}).read("secondaryPreferred").lean().exec(), function (err, version) {
                 if (err) {
-                    return console.error(err);
+                    return util.serverError(res, err);
                 }
                 if (!version) {
                     res.status(404).json({error: "version not found"})
@@ -338,7 +343,7 @@ module.exports = function (express, config) {
         } else {
             util.asCallback(ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version), "_id resource").read("secondaryPreferred").lean().exec(), function (err, version) {
                 if (err) {
-                    return console.error(err);
+                    return util.serverError(res, err);
                 }
                 if (!version) {
                     res.status(404).json({error: "version not found"})
@@ -353,7 +358,7 @@ module.exports = function (express, config) {
         if ("latest" === req.params.version) {
             util.asCallback(ResourceVersion.findOne({"resource": req.params.resource}, "_id resource uuid").sort({"releaseDate": -1}).read("secondaryPreferred").lean().exec(), function (err, version) {
                 if (err) {
-                    return console.error(err);
+                    return util.serverError(res, err);
                 }
                 if (!version) {
                     res.status(404).json({error: "version not found"})
@@ -364,7 +369,7 @@ module.exports = function (express, config) {
         } else {
             util.asCallback(ResourceVersion.findOne(versionIdOrUuidQuery(req.params.version), "_id resource uuid").read("secondaryPreferred").lean().exec(), function (err, version) {
                 if (err) {
-                    return console.error(err);
+                    return util.serverError(res, err);
                 }
                 if (!version) {
                     res.status(404).json({error: "version not found"})
@@ -381,12 +386,16 @@ module.exports = function (express, config) {
             return;
         }
 
-        if (req.params.resource <= 0) {
+        let resourceId = Number(req.params.resource);
+        if (!Number.isSafeInteger(resourceId) || resourceId <= 0) {
+            res.status(400).json({error: "invalid resource id"});
             return;
         }
+        // the body is optional
+        let body = req.body || {};
 
-        util.asCallback(UpdateRequest.findOne({requestedId: req.params.resource}).exec(), function (err, duplicate) {
-            if (err) return console.log(err);
+        util.asCallback(UpdateRequest.findOne({requestedId: resourceId}).exec(), function (err, duplicate) {
+            if (err) return util.serverError(res, err);
             if (duplicate) {
                 res.status(400).json({error: "Duplicate Update Request"});
                 return;
@@ -394,15 +403,15 @@ module.exports = function (express, config) {
 
             let request = new UpdateRequest({
                 type: "resource",
-                requestedId: req.params.resource,
+                requestedId: resourceId,
                 requested: Date.now(),
-                versions: req.body.versions !== false,
-                updates: req.body.updates !== false,
-                reviews: req.body.updates !== false,
-                delete: req.body.delete !== false
+                versions: body.versions !== false,
+                updates: body.updates !== false,
+                reviews: body.updates !== false,
+                delete: body.delete !== false
             });
             util.asCallback(request.save(), function (err, saved) {
-                if (err) return console.log(err);
+                if (err) return util.serverError(res, err);
                 res.json({
                     msg: "Resource update requested",
                     resource: saved.requestedId,
